@@ -10,17 +10,17 @@ A modular voice-based AI assistant powered by local language models, speech-to-t
 
 
 
-- 🎙️ **Voice Interaction**: Speech-to-text using Whisper and text-to-speech with voice cloning- 🎙️ **Voice Interaction**: Speech-to-text using Whisper and text-to-speech with voice cloning
+- 🎙️ **Voice Interaction**: Speech-to-text using Whisper and text-to-speech with voice cloning
 
-- 🧠 **Local LLM**: Runs on your hardware using transformers- 🧠 **Local LLM**: Runs on your hardware using transformers
+- 🧠 **Local LLM**: Runs on your hardware using transformers
 
-- 🎭 **Voice Cloning**: Multi-reference voice cloning using ChatterboxTTS- 🎭 **Voice Cloning**: Multi-reference voice cloning using ChatterboxTTS
+- 🎭 **Voice Cloning**: Multi-reference voice cloning using ChatterboxTTS
 
-- ⚡ **GPU Optimized**: CUDA acceleration, memory pinning, and streaming- ⚡ **GPU Optimized**: CUDA acceleration, memory pinning, and streaming
+- ⚡ **GPU Optimized**: CUDA acceleration, memory pinning, and streaming
 
-- 📝 **Conversation History**: Maintains context across sessions- 📝 **Conversation History**: Maintains context across sessions
+- 📝 **Conversation History**: Maintains context across sessions
 
-- 🎯 **Customizable Personality**: Configure your AI's behavior via prompts- 🎯 **Customizable Personality**: Configure your AI's behavior via prompts
+- 🎯 **Customizable Personality**: Configure your AI's behavior via prompts
 
 - 🛠️ **Standalone Testing App**: Terminal-based interactive testing interface
 
@@ -434,3 +434,4 @@ Built with:
 ---
 
 **Note**: This project is focused on local, privacy-first AI assistance. All processing happens on your hardware.
+
