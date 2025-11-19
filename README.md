@@ -428,11 +428,12 @@ See LICENSE file for details.
 Built with:
 - [Transformers](https://huggingface.co/transformers) - LLM inference
 - [Faster-Whisper](https://github.com/guillaumekln/faster-whisper) - STT
-- [Coqui TTS](https://github.com/coqui-ai/TTS) / [ChatterboxTTS](https://github.com/resemble-ai/chatterbox) - Voice cloning
-- [Piper TTS](https://github.com/rhasspy/piper) - Fallback TTS
+- [ChatterboxTTS](https://github.com/resemble-ai/chatterbox) - Voice cloning
+- [Piper TTS](https://github.com/rhasspy/piper) - Fallback fast TTS
 
 ---
 
 **Note**: This project is focused on local, privacy-first AI assistance. All processing happens on your hardware.
+
 
 
