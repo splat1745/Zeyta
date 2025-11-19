@@ -41,8 +41,8 @@ zeyta/
 │   └── controller.py       # Main orchestration loop
 ├── IO/                     # Input/Output handlers
 │   ├── stt.py              # Speech-to-Text (Whisper / faster-whisper)
-│   ├── tts.py              # Text-to-Speech (Coqui / Piper)
-│   ├── coqui_backend.py    # Voice cloning backend (ChatterboxTTS)
+│   ├── tts.py              # Text-to-Speech (Chatterbox / Piper)
+│   ├── chatterbox_backend.py    # Voice cloning backend (ChatterboxTTS)
 │   ├── mic_stream.py       # Microphone streaming utilities
 │   └── vision.py           # Vision capabilities (future)
 ├── integrations/           # Third-party integration modules (browser, smart home, etc.)
@@ -212,3 +212,4 @@ Built with:
 ---
 
 This project emphasizes local, privacy-first AI assistance: all processing occurs on your hardware.
+
