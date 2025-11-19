@@ -1,440 +1,214 @@
-# Zeyta - AI Assistant with Voice# Zeyta - AI Assistant with Voice
+# Zeyta — AI Assistant with Voice
 
+A modular, local-first voice-based AI assistant powered by local LLMs, speech-to-text (Whisper/faster-whisper), and optimized text-to-speech with voice cloning support.
 
+Table of contents
+- Features
+- Architecture & Project Structure
+- Setup & Installation
+- Configuration
+- Running
+- Troubleshooting
+- Development & Contributing
+- License & Credits
 
-A modular voice-based AI assistant powered by local language models, speech-to-text, and optimized text-to-speech with voice cloning capabilities.A modular voice-based AI assistant powered by local language models, speech-to-text, and optimized text-to-speech with voice cloning capabilities.
+## Features
 
-
-
-## Features## Features
-
-
-
-- 🎙️ **Voice Interaction**: Speech-to-text using Whisper and text-to-speech with voice cloning
-
-- 🧠 **Local LLM**: Runs on your hardware using transformers
-
-- 🎭 **Voice Cloning**: Multi-reference voice cloning using ChatterboxTTS
-
-- ⚡ **GPU Optimized**: CUDA acceleration, memory pinning, and streaming
-
-- 📝 **Conversation History**: Maintains context across sessions
-
-- 🎯 **Customizable Personality**: Configure your AI's behavior via prompts
-
-- 🛠️ **Standalone Testing App**: Terminal-based interactive testing interface
+- 🎙️ Voice Interaction: Speech-to-text using Whisper / faster-whisper and text-to-speech with voice cloning
+- 🧠 Local LLM: Run on your hardware using Hugging Face Transformers
+- 🎭 Voice Cloning: Multi-reference voice cloning via ChatterboxTTS
+- ⚡ GPU Optimized: CUDA acceleration, memory pinning, and streaming
+- 📝 Conversation History: Maintains context across sessions
+- 🎯 Customizable Personality: Configure AI behavior via prompts
+- 🛠️ Standalone & testing apps: Terminal-based testing interfaces and an optional GUI app
 
 ## Architecture
 
-## Project Structure
+Zeyta is organized modularly to separate concerns and make maintenance easier. Components are split into core logic, IO handlers, integrations, and testing tools.
 
-The project is organized into a modular structure to separate concerns and improve maintainability.
-
-```
-
-zeyta/- **`main.py`**: The main entry point of the application
-
-├── main.py                 # Main voice assistant entry point- **`config.py`**: Contains all constants, model IDs, and configuration settings
-
-├── config.py               # Configuration (create from config.example.py)- **`core/`**: The core logic of the assistant
-
-├── config.example.py       # Template configuration  - `brain.py`: Handles interaction with the Large Language Model (LLM)
-
-├── requirements.txt        # Python dependencies  - `context.py`: Manages the conversation history
-
-│  - `controller.py`: The main loop that orchestrates the flow between I/O and the brain
-
-├── core/                   # Core logic- **`io/`**: Handles all input and output operations
-
-│   ├── brain.py           # LLM interaction  - `stt.py`: Speech-to-Text using faster-whisper
-
-│   ├── context.py         # Conversation history management  - `tts.py`: Text-to-Speech using Coqui/Piper
-
-│   └── controller.py      # Main orchestration loop  - `coqui_backend.py`: Voice cloning backend
-
-│- **`integrations/`**: Modules for controlling third-party systems (placeholders)
-
-├── IO/                     # Input/Output handlers- **`utils/`**: Helper scripts for logging, tools, and profiling
-
-│   ├── stt.py             # Speech-to-Text (Whisper)- **`testing/`**: TTS optimization scripts
-
-│   ├── tts.py             # Text-to-Speech (Coqui/Piper)  - `test_tts_clean.py`: Standalone TTS testing with optimizations
-
-│   ├── coqui_backend.py   # Voice cloning backend  - `tts_server.py`: Persistent TTS server mode
-
-│   ├── mic_stream.py      # Microphone streaming  - `integrated_app.py`: Web-based testing interface for all components
-
-│   └── vision.py          # Vision capabilities (future)- **`tests/`**: Unit tests for the modules
-
-│
-
-├── testing/                # Testing tools## Setup
-
-│   ├── standalone_app.py  # Interactive terminal testing app
-
-│   ├── test_tts_clean.py  # TTS optimization testing### 1. Prerequisites
-
-│   ├── tts_server.py      # Persistent TTS server mode
-
-│   └── outputs/           # Generated audio files- Python 3.11+
-
-│- CUDA-capable GPU (recommended for optimal performance)
-
-├── integrations/           # Third-party integrations- FFmpeg installed on your system
-
-│   ├── browser.py         # Browser control
-
-│   ├── pc_control.py      # PC automation### 2. Installation
-
-│   └── smart_home.py      # Smart home integration
-
-│```bash
-
-├── utils/                  # Helper utilities# Clone the repository
-
-│   ├── logger.py          # Logging configurationgit clone https://github.com/relfayoumi/Zeyta.git
-
-│   ├── profiler.py        # Performance profilingcd Zeyta
-
-│   └── tools.py           # Utility functions
-
-│# Create virtual environment
-
-└── piper/                  # Piper TTS backend (fallback)python -m venv .venv
-
-    ├── piper.exe          # Piper executable.venv\Scripts\activate  # Windows
-
-    └── *.onnx             # Voice models# source .venv/bin/activate  # Linux/Mac
+## Project structure (overview)
 
 ```
+zeyta/
+├── main.py                 # Main voice assistant entry point
+├── app.py                  # Standalone window / desktop app entry (optional)
+├── config.example.py       # Template configuration
+├── config.py               # (gitignored) Actual configuration - create from example
+├── requirements.txt        # Python dependencies
+├── core/                   # Core logic
+│   ├── brain.py            # LLM interaction
+│   ├── context.py          # Conversation history management
+│   └── controller.py       # Main orchestration loop
+├── IO/                     # Input/Output handlers
+│   ├── stt.py              # Speech-to-Text (Whisper / faster-whisper)
+│   ├── tts.py              # Text-to-Speech (Coqui / Piper)
+│   ├── coqui_backend.py    # Voice cloning backend (ChatterboxTTS)
+│   ├── mic_stream.py       # Microphone streaming utilities
+│   └── vision.py           # Vision capabilities (future)
+├── integrations/           # Third-party integration modules (browser, smart home, etc.)
+├── utils/                  # Helper utilities (logger, profiler, tools)
+├── testing/                # Testing tools and apps
+│   ├── standalone_app.py
+│   ├── integrated_app.py
+│   ├── test_tts_clean.py
+│   └── tts_server.py
+├── testing/outputs/        # Generated audio files during tests
+├── piper/                  # Optional Piper TTS backend files
+└── docs/                   # Documentation (APP_GUIDE, ARCHITECTURE, etc.)
+```
 
-# Install PyTorch with CUDA support
+## Prerequisites
 
-## Quick Startpip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+- Python 3.11+
+- FFmpeg installed on your system (for audio handling)
+- CUDA-capable NVIDIA GPU recommended for best performance (8GB+ VRAM recommended)
+- Optional: PyWebView for standalone window mode
 
+## Installation
 
+1. Clone the repository
+```bash
+git clone https://github.com/relfayoumi/Zeyta.git
+cd Zeyta
+```
 
-### 1. Setup Environment# Install dependencies
+2. Create and activate a virtual environment
+```bash
+python -m venv .venv
+# Windows
+.venv\Scripts\activate
+# Linux / macOS
+source .venv/bin/activate
+```
 
+3. Install dependencies
+```bash
 pip install -r requirements.txt
-
-```bash
-
-# Create virtual environment
-
-python -m venv .venv### 3. Configuration
 ```
 
+4. (Optional) Install PyTorch with CUDA (example for CUDA 12.1)
+```bash
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+```
 
-# Activate (Windows)```bash
+## Configuration
 
-.venv\Scripts\activate# Copy the example config
-
+1. Copy the example configuration:
+```bash
 cp config.example.py config.py
+```
+2. Edit `config.py`:
+- Set `LLM_MODEL_ID` to a Hugging Face model suitable for your hardware.
+- Adjust `STT_MODEL_SIZE` (tiny, base, small, medium, large-v3).
+- Choose `TTS_BACKEND`: `"coqui"` (voice cloning) or `"piper"` (fallback).
+- Set `COQUI_REFERENCE_WAV` path for voice cloning reference files.
+- Set `SYSTEM_PROMPT`, `GENERATION_ARGS`, and other options to tune behavior.
 
-# Activate (Linux/Mac)
+Note: `config.py` is intentionally excluded from git and stores personal settings.
 
-source .venv/bin/activate# Edit config.py with your preferences:
+## Running
 
-# - Set your AI's personality in SYSTEM_PROMPT
-
-# Install dependencies# - Configure TTS backend (coqui or piper)
-
-pip install -r requirements.txt# - Set reference voice file path (for voice cloning)
-
-```# - Adjust model sizes based on your hardware
-
+- Run the interactive AI assistant (recommended):
+```bash
+python app.py
 ```
 
-### 2. Configure Settings
-
-### 4. Running
-
+- Run the command-line assistant:
 ```bash
-# Run the interactive AI assistant app (recommended for daily use)
-python app.py
-
-# Or run the voice assistant (command-line)
 python main.py
+```
 
-# Edit config.py with your preferences:
-
-# - LLM model selection# Or test TTS independently
-
-# Or launch the integrated testing app (for model testing)
+- Run the integrated testing GUI (for model testing and development):
+```bash
 python testing/integrated_app.py
 ```
 
-## 🚀 AI Assistant Application
-
-We provide a user-friendly application for daily use that runs in **its own standalone window**:
-
+- Standalone terminal testing app:
 ```bash
-python app.py
+python testing/standalone_app.py
 ```
 
-**Features:**
-- 🖥️ **Standalone Window**: Runs as a native desktop application (no browser needed)
-- 💬 **Chat Interface**: Clean, intuitive chat window
-- 📎 **File Upload**: Upload and discuss documents (TXT, PDF, DOCX, MD)
-- 🔧 **Pipeline Configuration**: Choose your processing mode:
-  - Text Chat Only (LLM)
-  - Voice to Text (STT → LLM)
-  - Voice to Voice (STT → LLM → TTS)
-  - Text to Voice (LLM → TTS)
-- 🎤 **Voice Input/Output**: Full voice conversation support
-
-**Installation for standalone window mode:**
-```bash
-pip install pywebview
-```
-
-See [`docs/APP_GUIDE.md`](docs/APP_GUIDE.md) for detailed documentation.
-
-## 🧪 Integrated Testing App
-
-For model testing and development:
-
-python testing/integrated_app.py
-
-**Main Voice Assistant:**```
-
-```bash
-
-python main.py## 🧪 Integrated Testing App
-
-```
-
-The testing app provides:
-- 🗣️ **TTS Testing**: Test ChatterboxTTS models with voice cloning
-- 🎤 **STT Testing**: Test Whisper models with microphone support
-- 💬 **LLM Chat**: Interactive text-to-text chat interface
-- 🔄 **Full Pipeline**: Test complete STT → LLM → TTS workflow
-
-```bash
-
-python testing/standalone_app.pypython testing/integrated_app.py
-
-```
-
-
-
-The standalone app provides an interactive terminal menu to test:The app provides:
-
-- 🗣️ **TTS Testing**: Test ChatterboxTTS models with voice cloning
-
-- 🎤 **STT Testing**: Test Whisper models with microphone support
-
-- 💬 **LLM Chat**: Interactive text-to-text chat interface
-
-- 🔄 **Full Pipeline**: Test complete STT → LLM → TTS workflow
-
-
-
-## Configuration OptionsSee [`testing/INTEGRATED_APP.md`](testing/INTEGRATED_APP.md) for detailed documentation.
-
-
-
-Edit `config.py` to customize:## TTS Optimization Features
-
-
-
-### LLM SettingsThe testing suite includes advanced optimizations:
-
-- `LLM_MODEL_ID`: Hugging Face model ID
-
-- `GENERATION_ARGS`: Temperature, top_p, max tokens, etc.- ✅ **Reference Filtering**: Automatically filters audio files >11 seconds
-
-- `SYSTEM_PROMPT`: AI personality and behavior- ✅ **GPU Optimizations**: CUDA streams, pinned memory, disabled gradients
-
-- ✅ **Multi-threading**: Parallel reference loading
-
-### STT Settings- ✅ **Caching**: Reference audio caching for faster subsequent runs
-
-- `STT_MODEL_SIZE`: Whisper model size (tiny, base, small, medium, large-v3)- ✅ **Benchmark Mode**: Consistent performance testing
-
-- `STT_COMPUTE_TYPE`: Precision (float16, int8, float32)- ✅ **Server Mode**: Zero-reload persistent model hosting
-
-
-
-### TTS SettingsSee `testing/FIXES_APPLIED.md` for detailed optimization documentation.
-
-- `TTS_BACKEND`: "coqui" (voice cloning) or "piper" (fallback)
-
-- `COQUI_MODEL_NAME`: Voice cloning model## Voice Cloning Setup
-
-- `COQUI_REFERENCE_WAV`: Reference audio for voice cloning
-
-- `COQUI_DEVICE`: "cuda" or "cpu"1. Record reference audio samples (5-10 seconds each)
-
-2. Place them in `IO/AudioRef_48kHz/` directory
-
-### Conversation Settings3. Use `--blend-voices` flag for multi-reference cloning
-
-- `CHAT_LOG_DIR`: Directory for conversation logs4. See `QUALITY_GUIDE.md` for recording tips
-
-- `EXIT_PHRASES`: Words to end conversation
-
-- `FAREWELL_MESSAGE`: Goodbye message## Performance
-
-
-
-## GPU Requirements- **Model Loading**: ~10s (first run), ~0s (in-memory cache)
-
-- **TTS Generation**: ~8-10s per sentence (GPU)
-
-For best performance:- **Server Mode**: Zero reload overhead between generations
-
-- **NVIDIA GPU** with CUDA support
-
-- **8GB+ VRAM** recommended for large models## Documentation
-
-- **CUDA Toolkit** installed
-
-- `QUALITY_GUIDE.md` - Voice recording quality guidelines
-
-The system auto-detects and uses GPU when available. CPU fallback is supported but slower.- `testing/CACHING_INVESTIGATION.md` - Caching implementation details
-
-- `testing/MODEL_CACHING_STATUS.md` - Model serialization limitations
-
-## Testing Features- `testing/FIXES_APPLIED.md` - Complete optimization summary
-
-
-
-### Standalone Testing App## Contributing
-
-Interactive terminal interface for testing all components:
-
-Contributions are welcome! Please feel free to submit pull requests or open issues.
-
-```bash
-
-python testing/standalone_app.py## License
-
-```
-
-This project is open source. Please check individual dependencies for their licenses.
-
-Features:
-
-- Color-coded terminal output## Credits
-
-- No browser required
-
-- Lazy model loading (only load what you need)- Uses [ChatterboxTTS](https://github.com/resemble-ai/chatterbox) for voice cloning
-
-- Persistent chat history during session- Powered by [Whisper](https://github.com/openai/whisper) for speech recognition
-
-- System information display- LLM support via [Transformers](https://github.com/huggingface/transformers)
-
-```
-
-### TTS Optimization Testing
-
-Test and benchmark TTS with various settings:
-
+- Test TTS optimization and voice cloning:
 ```bash
 python testing/test_tts_clean.py --ref-dir IO/AudioRef_48kHz --expressive --temperature 0.75
 ```
 
-### TTS Server Mode
-
-Run TTS as a persistent server:
-
+- Run persistent TTS server:
 ```bash
 python testing/tts_server.py
 ```
 
+## Capabilities & Pipelines
+
+Configurable pipelines include:
+- Text Chat Only (LLM)
+- Voice to Text (STT → LLM)
+- Voice to Voice (STT → LLM → TTS)
+- Text to Voice (LLM → TTS)
+
 ## Troubleshooting
 
-### Import Errors
-
-If you get `faster-whisper` import errors:
+- Import errors for faster-whisper:
 ```bash
 pip install faster-whisper
 ```
-
-If you get `chatterbox` import errors:
+- Import errors for chatterbox:
 ```bash
 pip install chatterbox-tts
 ```
-
-### CUDA Out of Memory
-
-- Reduce model size in config
-- Use `STT_COMPUTE_TYPE = "int8"` for lower memory usage
-- Close other GPU applications
-- Use smaller LLM models
-
-### Audio Issues
-
-- Ensure microphone permissions are granted
-- Check `config.py` TTS backend settings
-- Test with standalone app first
-- Verify audio files in `testing/outputs/`
-
-## Development
-
-### Project Philosophy
-
-- **Modular Design**: Each component is independent and testable
-- **Local-First**: Runs entirely on your hardware, no cloud dependencies
-- **Optimized**: GPU acceleration, efficient memory usage, streaming
-- **Customizable**: Extensive configuration options
-
-### Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test with standalone app
-5. Submit a pull request
-
-## Security
-
-- `config.py` is excluded from git (contains personal settings)
-- Use `config.example.py` as a template
-- Conversation logs stored locally in `chat_logs/`
-- No data sent to external servers
+- CUDA Out of Memory:
+  - Reduce model sizes in `config.py`
+  - Use `STT_COMPUTE_TYPE = "int8"`
+  - Close other GPU apps
+  - Use smaller LLM models
+- Audio issues:
+  - Check microphone permissions
+  - Verify `config.py` TTS backend setting
+  - Inspect `testing/outputs/` for generated audio files
 
 ## Performance Tips
 
-1. **Use GPU**: Dramatically faster inference
-2. **Optimize Model Size**: Balance quality vs. speed
-3. **Tune Generation Args**: Lower temperature/tokens for faster responses
-4. **Voice Cloning**: Use 5-10 second reference audio
-5. **Memory Pinning**: Enabled automatically for CUDA
+1. Use a GPU for inference when possible.
+2. Balance model size vs. speed—smaller models are faster with lower quality.
+3. Tune generation args (temperature, top-p, max tokens).
+4. Use 5–10 second reference clips for voice cloning.
+5. Memory pinning and CUDA optimizations are used where available.
+
+## Development & Contributing
+
+Project philosophy:
+- Modular design — each component is independent and testable.
+- Local-first — runs on your hardware, no cloud dependencies.
+- Optimized — GPU acceleration, efficient memory usage.
+- Customizable — extensive configuration options.
+
+Contributing:
+1. Fork the repo
+2. Create a feature branch
+3. Implement and test your changes (use the standalone testing app)
+4. Submit a pull request
 
 ## Documentation
 
-Comprehensive documentation is available in the `docs/` directory:
-
-- **[APP_GUIDE.md](docs/APP_GUIDE.md)** - Complete user guide for the web application
-- **[ARCHITECTURE.md](docs/ARCHITECTURE.md)** - System architecture and design
-- **[FEATURE_SHOWCASE.md](docs/FEATURE_SHOWCASE.md)** - Feature overview and examples
-- **[QUICK_REFERENCE.md](docs/QUICK_REFERENCE.md)** - Quick reference guide
-- **[USAGE_EXAMPLES.md](docs/USAGE_EXAMPLES.md)** - Usage scenarios and examples
-
-Additional resources:
-- **[examples/](examples/)** - Demo scripts and examples
-- **[testing/](testing/)** - Testing tools and utilities
+See docs/ for more details:
+- docs/APP_GUIDE.md
+- docs/ARCHITECTURE.md
+- docs/FEATURE_SHOWCASE.md
+- docs/QUICK_REFERENCE.md
+- docs/USAGE_EXAMPLES.md
 
 ## License
 
-See LICENSE file for details.
+See the LICENSE file for details. Check individual dependency licenses for any external libraries used.
 
 ## Credits
 
 Built with:
-- [Transformers](https://huggingface.co/transformers) - LLM inference
-- [Faster-Whisper](https://github.com/guillaumekln/faster-whisper) - STT
-- [ChatterboxTTS](https://github.com/resemble-ai/chatterbox) - Voice cloning
-- [Piper TTS](https://github.com/rhasspy/piper) - Fallback fast TTS
+- Transformers (Hugging Face) — LLM inference
+- Faster-Whisper — STT
+- ChatterboxTTS — Voice cloning
+- Piper TTS — Fast fallback TTS
 
 ---
 
-**Note**: This project is focused on local, privacy-first AI assistance. All processing happens on your hardware.
-
-
-
-
+This project emphasizes local, privacy-first AI assistance: all processing occurs on your hardware.
