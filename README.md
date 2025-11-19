@@ -118,12 +118,12 @@ zeyta/- **`main.py`**: The main entry point of the application
 
 pip install -r requirements.txt
 
-```bash```
+```bash
 
 # Create virtual environment
 
 python -m venv .venv### 3. Configuration
-
+```
 
 
 # Activate (Windows)```bash
@@ -434,6 +434,7 @@ Built with:
 ---
 
 **Note**: This project is focused on local, privacy-first AI assistance. All processing happens on your hardware.
+
 
 
 
