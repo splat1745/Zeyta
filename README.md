@@ -211,23 +211,23 @@ The testing app provides:
 - 💬 **LLM Chat**: Interactive text-to-text chat interface
 - 🔄 **Full Pipeline**: Test complete STT → LLM → TTS workflow
 
-```bash```bash
+```bash
 
 python testing/standalone_app.pypython testing/integrated_app.py
 
-``````
+```
 
 
 
 The standalone app provides an interactive terminal menu to test:The app provides:
 
-- 🗣️ Text-to-Speech with voice cloning- 🗣️ **TTS Testing**: Test ChatterboxTTS models with voice cloning
+- 🗣️ **TTS Testing**: Test ChatterboxTTS models with voice cloning
 
-- 🎤 Speech-to-Text transcription- 🎤 **STT Testing**: Test Whisper models with microphone support
+- 🎤 **STT Testing**: Test Whisper models with microphone support
 
-- 💬 LLM chat interactions- 💬 **LLM Chat**: Interactive text-to-text chat interface
+- 💬 **LLM Chat**: Interactive text-to-text chat interface
 
-- 🔄 Full pipeline testing (STT → LLM → TTS)- 🔄 **Full Pipeline**: Test complete STT → LLM → TTS workflow
+- 🔄 **Full Pipeline**: Test complete STT → LLM → TTS workflow
 
 
 
@@ -434,4 +434,5 @@ Built with:
 ---
 
 **Note**: This project is focused on local, privacy-first AI assistance. All processing happens on your hardware.
+
 
