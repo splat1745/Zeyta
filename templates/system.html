@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zeyta AI - System Information</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">
+            <i class="fas fa-robot"></i>
+            <span>Zeyta AI</span>
+        </div>
+        <div class="nav-links">
+            <a href="/"><i class="fas fa-home"></i> Home</a>
+            <a href="/tts"><i class="fas fa-volume-up"></i> TTS</a>
+            <a href="/stt"><i class="fas fa-microphone"></i> STT</a>
+            <a href="/chat"><i class="fas fa-comments"></i> Chat</a>
+            <a href="/pipeline"><i class="fas fa-cogs"></i> Pipeline</a>
+            <a href="/models"><i class="fas fa-cubes"></i> Models</a>
+            <a href="/history"><i class="fas fa-history"></i> History</a>
+            <a href="/system" class="active"><i class="fas fa-info-circle"></i> System</a>
+            <a href="/agent"><i class="fas fa-robot"></i> Agent</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="page-header">
+            <h1><i class="fas fa-info-circle"></i> System Information</h1>
+            <p>Hardware status, model information, and dependencies</p>
+        </div>
+
+        <button class="btn btn-primary" onclick="refreshSystemInfo()">
+            <i class="fas fa-sync-alt"></i> Refresh
+        </button>
+
+        <div class="info-grid">
+            <div class="info-card">
+                <h3><i class="fas fa-microchip"></i> Real-time Resources</h3>
+                <div class="info-item">
+                    <span class="info-label">GPU Available:</span>
+                    <span id="gpu-available">Checking...</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">GPU Device:</span>
+                    <span id="gpu-device">Checking...</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">CPU Usage:</span>
+                    <div class="progress-bar-container" style="flex: 1; height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; margin: 0 10px;">
+                        <div id="cpu-bar" style="width: 0%; height: 100%; background: var(--primary-color); border-radius: 4px; transition: width 0.5s;"></div>
+                    </div>
+                    <span id="cpu-usage">0%</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">RAM Usage:</span>
+                    <div class="progress-bar-container" style="flex: 1; height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; margin: 0 10px;">
+                        <div id="ram-bar" style="width: 0%; height: 100%; background: var(--secondary-color); border-radius: 4px; transition: width 0.5s;"></div>
+                    </div>
+                    <span id="ram-usage">0%</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">GPU Memory:</span>
+                    <div class="progress-bar-container" style="flex: 1; height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; margin: 0 10px;">
+                        <div id="gpu-bar" style="width: 0%; height: 100%; background: var(--success-color); border-radius: 4px; transition: width 0.5s;"></div>
+                    </div>
+                    <span id="gpu-usage">0%</span>
+                </div>
+            </div>
+
+            <div class="info-card">
+                <h3><i class="fas fa-brain"></i> Model Status</h3>
+                <div class="info-item">
+                    <span class="info-label">TTS Model:</span>
+                    <span id="model-tts">Not Loaded</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">STT Model:</span>
+                    <span id="model-stt">Not Loaded</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">LLM Model:</span>
+                    <span id="model-llm">Not Loaded</span>
+                </div>
+            </div>
+
+            <div class="info-card">
+                <h3><i class="fas fa-cog"></i> Model Configuration</h3>
+                <div id="model-configs">
+                    <div class="config-section">
+                        <h4>TTS Config</h4>
+                        <div class="info-item">
+                            <span class="info-label">Device:</span>
+                            <span id="tts-device">N/A</span>
+                        </div>
+                    </div>
+                    <div class="config-section">
+                        <h4>STT Config</h4>
+                        <div class="info-item">
+                            <span class="info-label">Size:</span>
+                            <span id="stt-size">N/A</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Device:</span>
+                            <span id="stt-device">N/A</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Compute Type:</span>
+                            <span id="stt-compute">N/A</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-card">
+                <h3><i class="fas fa-file"></i> Output Files</h3>
+                <div class="info-item">
+                    <span class="info-label">Generated Files:</span>
+                    <span id="output-count">0</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="dependencies-panel">
+            <h2><i class="fas fa-terminal"></i> System Logs & Dependencies</h2>
+            <div class="terminal-view" id="dependencies-grid">
+                <div class="terminal-line">
+                    <span class="timestamp">[SYSTEM]</span>
+                    <span class="level-info">Initializing system diagnostics...</span>
+                </div>
+                <!-- Populated by JS -->
+            </div>
+        </div>
+
+        <div class="info-panel">
+            <h3><i class="fas fa-question-circle"></i> About Zeyta AI</h3>
+            <p>
+                Zeyta AI is a comprehensive AI assistant platform that combines state-of-the-art 
+                Text-to-Speech, Speech-to-Text, and Large Language Model technologies into a 
+                single, easy-to-use web interface.
+            </p>
+            <h4>Features:</h4>
+            <ul>
+                <li><strong>ChatterboxTTS:</strong> High-quality text-to-speech with voice cloning support</li>
+                <li><strong>Whisper STT:</strong> Accurate speech recognition in multiple languages</li>
+                <li><strong>Advanced LLM:</strong> Context-aware conversational AI</li>
+                <li><strong>Full Pipeline:</strong> Complete end-to-end audio processing workflow</li>
+                <li><strong>Auto Dependency Management:</strong> Automatic installation of required packages</li>
+            </ul>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 Zeyta AI. All rights reserved.</p>
+    </footer>
+
+    <script src="/static/app.js"></script>
+    <script src="/static/system.js"></script>
+</body>
+</html>

@@ -1,0 +1,83 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environments
+# (Generally bad practice to commit these, as they are large and OS-specific)
+venv/
+.venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+venv_chatterbox/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Project Specific - Large Data & Generated Content
+models/
+outputs/
+uploads/
+chat_logs/
+agent_screenshots/
+benchmark_results/
+debug_files/
+tmp_chatter_test/
+.tts_cache/
+.tts_cache_advanced/
+onnx_inference/
+cpp_inference/
+
+# Large File Extensions
+*.gguf
+*.bin
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+*.onnx
+*.wav
+*.mp3
+*.flac
+*.zip
+*.whl
+*.tar.gz
+*.rar
+*.7z
+*.exe
+*.dll
+*.obj
+*.lib
+*.iso
+
+# System
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Ignore 
+test_files/

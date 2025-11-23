@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agent Mode - Zeyta AI</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">
+            <i class="fas fa-robot"></i>
+            <span>Zeyta AI</span>
+        </div>
+        <div class="nav-links">
+            <a href="/"><i class="fas fa-home"></i> Home</a>
+            <a href="/tts"><i class="fas fa-volume-up"></i> TTS</a>
+            <a href="/stt"><i class="fas fa-microphone"></i> STT</a>
+            <a href="/chat"><i class="fas fa-comments"></i> Chat</a>
+            <a href="/pipeline"><i class="fas fa-cogs"></i> Pipeline</a>
+            <a href="/models"><i class="fas fa-cubes"></i> Models</a>
+            <a href="/history"><i class="fas fa-history"></i> History</a>
+            <a href="/system"><i class="fas fa-info-circle"></i> System</a>
+            <a href="/agent" class="active"><i class="fas fa-robot"></i> Agent</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="page-header">
+            <h1><i class="fas fa-robot"></i> Autonomous Agent Mode</h1>
+            <p>AI agent with screen analysis and task automation via Ollama</p>
+        </div>
+
+        <!-- Status Section -->
+        <div class="card">
+            <div class="card-header">
+                <h2><i class="fas fa-info-circle"></i> Agent Status</h2>
+            </div>
+            <div class="card-body">
+                <div class="status-grid">
+                    <div class="status-item">
+                        <span class="status-label">Agent:</span>
+                        <span id="agent-status" class="status-badge badge-secondary">Not Initialized</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">Ollama:</span>
+                        <span id="ollama-status" class="status-badge badge-secondary">Disconnected</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">Model:</span>
+                        <span id="model-status" class="status-value">None</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">Screen:</span>
+                        <span id="screen-info" class="status-value">Unknown</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Setup Section -->
+        <div class="card">
+            <div class="card-header">
+                <h2><i class="fas fa-cog"></i> Agent Setup</h2>
+            </div>
+            <div class="card-body">
+                <div class="info-box" style="background: rgba(102, 126, 234, 0.1); border-left-color: var(--primary-color); margin-bottom: 1.5rem;">
+                    <i class="fas fa-info-circle" style="color: var(--primary-color);"></i>
+                    <div>
+                        <strong>Setup Steps:</strong>
+                        <ol style="margin: 0.5rem 0 0 1.5rem; padding: 0;">
+                            <li>Click "Initialize Agent" to start the agent system</li>
+                            <li>Select an Ollama model (e.g., llava) from the dropdown</li>
+                            <li>Grant necessary permissions below</li>
+                            <li>Start using screen analysis and task execution!</li>
+                        </ol>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <button id="init-btn" class="btn btn-primary">
+                        <i class="fas fa-power-off"></i> Initialize Agent
+                    </button>
+                    <button id="refresh-models-btn" class="btn btn-secondary" disabled>
+                        <i class="fas fa-sync"></i> Refresh Models
+                    </button>
+                    <button id="emergency-stop-btn" class="btn" style="background-color: #dc3545; color: white; border: none; font-weight: bold;" disabled>
+                        <i class="fas fa-stop-circle"></i> EMERGENCY STOP
+                    </button>
+                </div>
+                
+                <div class="info-box" style="background: rgba(220, 53, 69, 0.1); border-left: 4px solid #dc3545; margin-bottom: 1rem; display: none;" id="emergency-stop-info">
+                    <i class="fas fa-info-circle" style="color: #dc3545;"></i>
+                    <div>
+                        <strong>Emergency Stop:</strong> Immediately cancels any running operation, unloads the model from VRAM, and stops all agent activity. Use this if your system becomes slow or unresponsive.
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="model-select">Ollama Model:</label>
+                    <select id="model-select" class="form-control" disabled>
+                        <option value="">Select a model...</option>
+                    </select>
+                    <small class="form-hint">Vision models like llava work best for screen analysis. Select a model after initialization.</small>
+                </div>
+
+                <div class="info-box info-warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <div>
+                        <strong>Requirements:</strong> Ollama must be running locally. 
+                        Install from <a href="https://ollama.ai" target="_blank">ollama.ai</a> and run: 
+                        <code>ollama pull llava</code> for vision capabilities.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Permissions Section -->
+        <div class="card">
+            <div class="card-header">
+                <h2><i class="fas fa-shield-alt"></i> Permissions</h2>
+            </div>
+            <div class="card-body">
+                <p class="form-hint">Grant permissions for agent actions (required for automation)</p>
+                
+                <div class="permission-grid">
+                    <div class="permission-item">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="perm-mouse" class="permission-checkbox">
+                            <span>
+                                <i class="fas fa-mouse-pointer"></i> Mouse Control
+                                <small>Allow clicking and moving the mouse</small>
+                            </span>
+                        </label>
+                    </div>
+                    
+                    <div class="permission-item">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="perm-keyboard" class="permission-checkbox">
+                            <span>
+                                <i class="fas fa-keyboard"></i> Keyboard Control
+                                <small>Allow typing and key presses</small>
+                            </span>
+                        </label>
+                    </div>
+                    
+                    <div class="permission-item">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="perm-files" class="permission-checkbox">
+                            <span>
+                                <i class="fas fa-folder-open"></i> File Operations
+                                <small>Allow reading and writing files</small>
+                            </span>
+                        </label>
+                    </div>
+                    
+                    <div class="permission-item">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="perm-system" class="permission-checkbox">
+                            <span>
+                                <i class="fas fa-terminal"></i> System Commands
+                                <small>Allow executing system commands</small>
+                            </span>
+                        </label>
+                    </div>
+                </div>
+
+                <button id="save-permissions-btn" class="btn btn-primary" disabled>
+                    <i class="fas fa-save"></i> Save Permissions
+                </button>
+            </div>
+        </div>
+
+        <!-- Screen Analysis Section -->
+        <div class="card">
+            <div class="card-header">
+                <h2><i class="fas fa-desktop"></i> Screen Analysis</h2>
+            </div>
+            <div class="card-body">
+                <div class="form-group">
+                    <label for="analysis-prompt">Analysis Prompt:</label>
+                    <input type="text" id="analysis-prompt" class="form-control" 
+                           value="Describe what you see on the screen in detail." 
+                           placeholder="What should the AI analyze?">
+                </div>
+                
+                <button id="analyze-screen-btn" class="btn btn-primary" disabled>
+                    <i class="fas fa-search"></i> Analyze Screen Now
+                </button>
+
+                <div id="screen-analysis-result" class="result-box" style="display:none;">
+                    <h3>Analysis Result:</h3>
+                    <div id="analysis-text" class="analysis-text"></div>
+                    <div id="screenshot-container" style="display:none;">
+                        <h4>Screenshot:</h4>
+                        <img id="screenshot-img" class="screenshot-img" alt="Screenshot">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Task Execution Section -->
+        <div class="card">
+            <div class="card-header">
+                <h2><i class="fas fa-tasks"></i> Task Execution <span class="status-badge badge-warning" style="font-size: 0.8rem; margin-left: 10px;">BETA</span></h2>
+            </div>
+            <div class="card-body">
+                <div class="form-group">
+                    <label for="task-input">Task Description:</label>
+                    <textarea id="task-input" class="form-control" rows="3" 
+                              placeholder="E.g., 'Find me a good YouTube video' or 'Open Notepad and type Hello World'"></textarea>
+                    <small class="form-hint">
+                        <strong>Agent will autonomously execute multi-step tasks!</strong><br>
+                        Examples: "Find a YouTube video about cooking", "Open calculator", "Search Google for Python tutorials"
+                    </small>
+                </div>
+                
+                <div class="button-group">
+                    <button id="execute-task-btn" class="btn btn-success" disabled>
+                        <i class="fas fa-play"></i> Execute Task
+                    </button>
+                    <button class="btn btn-secondary example-task" data-task="Find me a good YouTube video" disabled>
+                        <i class="fab fa-youtube"></i> YouTube Example
+                    </button>
+                    <button class="btn btn-secondary example-task" data-task="Open Notepad and type Hello from Agent Mode!" disabled>
+                        <i class="fas fa-sticky-note"></i> Notepad Example
+                    </button>
+                    <button class="btn btn-secondary example-task" data-task="Open calculator" disabled>
+                        <i class="fas fa-calculator"></i> Calculator Example
+                    </button>
+                </div>
+
+                <div id="task-result" class="result-box" style="display:none;">
+                    <h3>Task Analysis:</h3>
+                    <div id="task-analysis" class="analysis-text"></div>
+                    
+                    <div id="task-actions" style="display:none;">
+                        <h4>Suggested Actions:</h4>
+                        <div id="actions-list"></div>
+                        <button id="confirm-actions-btn" class="btn btn-warning">
+                            <i class="fas fa-check"></i> Confirm & Execute
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chat Section -->
+        <div class="card">
+            <div class="card-header">
+                <h2><i class="fas fa-comments"></i> Agent Chat</h2>
+            </div>
+            <div class="card-body">
+                <div id="agent-chat-container" class="chat-container">
+                    <div id="agent-messages" class="messages-container"></div>
+                </div>
+
+                <div class="chat-input-container">
+                    <div class="form-group">
+                        <textarea id="agent-chat-input" class="form-control" rows="2" 
+                                  placeholder="Chat with the agent..." disabled></textarea>
+                    </div>
+                    
+                    <div class="chat-controls">
+                        <label class="checkbox-label inline">
+                            <input type="checkbox" id="include-screen-check">
+                            <span><i class="fas fa-camera"></i> Include Screen</span>
+                        </label>
+                        
+                        <div>
+                            <button id="send-message-btn" class="btn btn-primary" disabled>
+                                <i class="fas fa-paper-plane"></i> Send
+                            </button>
+                            <button id="clear-chat-btn" class="btn btn-secondary" disabled>
+                                <i class="fas fa-trash"></i> Clear
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="card">
+            <div class="card-header">
+                <h2><i class="fas fa-bolt"></i> Quick Actions</h2>
+            </div>
+            <div class="card-body">
+                <div class="button-group">
+                    <button class="btn btn-secondary quick-action" data-action="mouse_move" data-params='{"x": 500, "y": 500}' disabled>
+                        <i class="fas fa-arrows-alt"></i> Move Mouse (500, 500)
+                    </button>
+                    <button class="btn btn-secondary quick-action" data-action="mouse_click" data-params='{"x": 100, "y": 100, "button": "left"}' disabled>
+                        <i class="fas fa-mouse-pointer"></i> Click (100, 100)
+                    </button>
+                    <button class="btn btn-secondary quick-action" data-action="keyboard_type" data-params='{"text": "Hello from Agent!"}' disabled>
+                        <i class="fas fa-keyboard"></i> Type Text
+                    </button>
+                    <button class="btn btn-secondary quick-action" data-action="key_press" data-params='{"key": "enter"}' disabled>
+                        <i class="fas fa-level-down-alt"></i> Press Enter
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay" style="display: none;">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <p id="loading-message" class="loading-message">Processing...</p>
+        </div>
+    </div>
+
+    <script src="/static/app.js"></script>
+    <script src="/static/agent.js"></script>
+</body>
+</html>

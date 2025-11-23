@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zeyta AI - Chat</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="compact-page">
+    <nav class="navbar">
+        <div class="nav-brand">
+            <i class="fas fa-robot"></i>
+            <span>Zeyta AI</span>
+        </div>
+        <div class="nav-links">
+            <a href="/"><i class="fas fa-home"></i> Home</a>
+            <a href="/tts"><i class="fas fa-volume-up"></i> TTS</a>
+            <a href="/stt"><i class="fas fa-microphone"></i> STT</a>
+            <a href="/chat" class="active"><i class="fas fa-comments"></i> Chat</a>
+            <a href="/pipeline"><i class="fas fa-cogs"></i> Pipeline</a>
+            <a href="/models"><i class="fas fa-cubes"></i> Models</a>
+            <a href="/history"><i class="fas fa-history"></i> History</a>
+            <a href="/system"><i class="fas fa-info-circle"></i> System</a>
+            <a href="/agent"><i class="fas fa-robot"></i> Agent</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="page-header">
+            <h1>
+                <button class="btn btn-sm btn-secondary mobile-menu-btn" onclick="toggleSidebar()">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <i class="fas fa-comments"></i> AI Chat
+            </h1>
+            <p>Have a conversation with Zeyta AI</p>
+        </div>
+
+        <!-- Mobile Sidebar Overlay -->
+        <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+        <div class="model-status">
+            <div class="status-badge" id="llm-status">Not Loaded</div>
+            
+            <div class="model-controls" style="display: flex; gap: 1rem; align-items: center;">
+                <select id="llm-provider" class="form-select" onchange="updateModelList()" style="width: 150px;">
+                    <option value="ollama">Ollama (Local)</option>
+                    <option value="openai">OpenAI</option>
+                    <option value="anthropic">Anthropic</option>
+                </select>
+                <select id="llm-model" class="form-select" style="width: 200px;">
+                    <option value="" disabled selected>Select Model</option>
+                </select>
+            </div>
+
+            <button class="btn btn-primary" id="init-btn" onclick="initializeLLM()">
+                <i class="fas fa-power-off"></i> Initialize LLM
+            </button>
+            <button class="btn btn-warning" onclick="clearChat()">
+                <i class="fas fa-trash"></i> Clear History
+            </button>
+        </div>
+
+        <div class="chat-layout">
+            <div class="chat-sidebar">
+                <div class="sidebar-header">
+                    <h3><i class="fas fa-history"></i> History</h3>
+                    <button class="btn btn-sm btn-secondary" onclick="newChat()">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+                <div class="history-list" id="history-list">
+                    <!-- Populated by JS -->
+                    <div class="history-item active">
+                        <div class="history-title">Current Chat</div>
+                        <div class="history-date">Just now</div>
+                    </div>
+                </div>
+                <div class="sidebar-footer" style="padding: 1rem; border-top: var(--glass-border);">
+                    <div class="form-group" style="margin-bottom: 1rem;">
+                        <label for="personality-select" style="font-size: 0.9rem;">
+                            <i class="fas fa-user-astronaut"></i> Personality
+                        </label>
+                        <select id="personality-select" onchange="changePersonality(this.value)">
+                            <option value="general">General Assistant</option>
+                            <option value="coding">Coding Partner</option>
+                            <option value="nutritionist">Nutritionist</option>
+                            <option value="creative">Creative Writer</option>
+                            <option value="academic">Academic Researcher</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-secondary btn-sm" style="width: 100%;" onclick="exportChat()">
+                        <i class="fas fa-file-export"></i> Export Conversation
+                    </button>
+                </div>
+                
+                <div class="sidebar-plugins" style="padding: 1rem; border-top: var(--glass-border);">
+                    <h4 style="margin-bottom: 0.5rem; font-size: 0.9rem; color: var(--text-secondary);"><i class="fas fa-plug"></i> Plugins</h4>
+                    <div class="plugins-list" id="plugins-list">
+                        <!-- Populated by JS based on model capabilities -->
+                        <div class="plugin-item" style="margin-bottom: 0.5rem;">
+                            <label class="checkbox-label" style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; cursor: pointer;">
+                                <input type="checkbox" id="plugin-web" onchange="togglePlugin('web', this.checked)">
+                                <span>Web Search</span>
+                            </label>
+                        </div>
+                        <div class="plugin-item" style="margin-bottom: 0.5rem;">
+                            <label class="checkbox-label" style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; cursor: pointer;">
+                                <input type="checkbox" id="plugin-calc" onchange="togglePlugin('calc', this.checked)">
+                                <span>Calculator</span>
+                            </label>
+                        </div>
+                        <div class="plugin-item">
+                            <label class="checkbox-label" style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; cursor: pointer;">
+                                <input type="checkbox" id="plugin-vision" onchange="togglePlugin('vision', this.checked)">
+                                <span>Vision Analysis</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chat-main">
+                <div class="chat-messages" id="chat-messages">
+                    <div class="chat-message assistant">
+                        <div class="message-avatar">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                        <div class="message-content">
+                            <div class="message-header">Zeyta AI</div>
+                            <div class="message-text">Hello! I'm Zeyta, your AI assistant. How can I help you today?</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chat-input-area">
+                    <div class="chat-input-container">
+                        <textarea 
+                            id="chat-input" 
+                            placeholder="Type your message here..." 
+                            rows="3"
+                            onkeydown="handleChatKeydown(event)"></textarea>
+                        <button class="btn btn-success" onclick="sendMessage()">
+                            <i class="fas fa-paper-plane"></i> Send
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="loading-overlay" id="loading-overlay" style="display:none;">
+            <div class="spinner"></div>
+            <p>Thinking...</p>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 Zeyta AI. All rights reserved.</p>
+    </footer>
+
+    <script src="/static/app.js"></script>
+    <script src="/static/chat.js"></script>
+    <!-- Load marked.js at the end to ensure it's available -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</body>
+</html>

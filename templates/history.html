@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zeyta AI - History</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">
+            <i class="fas fa-robot"></i>
+            <span>Zeyta AI</span>
+        </div>
+        <div class="nav-links">
+            <a href="/"><i class="fas fa-home"></i> Home</a>
+            <a href="/tts"><i class="fas fa-volume-up"></i> TTS</a>
+            <a href="/stt"><i class="fas fa-microphone"></i> STT</a>
+            <a href="/chat"><i class="fas fa-comments"></i> Chat</a>
+            <a href="/pipeline"><i class="fas fa-cogs"></i> Pipeline</a>
+            <a href="/models"><i class="fas fa-cubes"></i> Models</a>
+            <a href="/history" class="active"><i class="fas fa-history"></i> History</a>
+            <a href="/system"><i class="fas fa-info-circle"></i> System</a>
+            <a href="/agent"><i class="fas fa-robot"></i> Agent</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="page-header">
+            <h1><i class="fas fa-history"></i> History</h1>
+            <p>View and manage generated files</p>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2>Generated Audio Files</h2>
+            </div>
+            <div class="card-body">
+                <div id="file-list" class="file-grid">
+                    <p>Loading...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 Zeyta AI. All rights reserved.</p>
+    </footer>
+
+    <script src="/static/app.js"></script>
+    <script>
+        async function loadHistory() {
+            const container = document.getElementById('file-list');
+            try {
+                const response = await fetch('/api/history/files');
+                const data = await response.json();
+                
+                if (data.success) {
+                    if (data.files.length === 0) {
+                        container.innerHTML = '<p>No files found.</p>';
+                        return;
+                    }
+                    
+                    container.innerHTML = '';
+                    data.files.forEach(file => {
+                        const item = document.createElement('div');
+                        item.className = 'file-item';
+                        item.innerHTML = `
+                            <div class="file-icon"><i class="fas fa-file-audio"></i></div>
+                            <div class="file-info">
+                                <div class="file-name">${file.name}</div>
+                                <div class="file-date">${file.date}</div>
+                                <div class="file-size">${file.size}</div>
+                            </div>
+                            <div class="file-actions">
+                                <audio controls src="${file.url}" style="height: 30px; width: 200px;"></audio>
+                                <a href="${file.url}" download class="btn btn-secondary btn-sm"><i class="fas fa-download"></i></a>
+                            </div>
+                        `;
+                        container.appendChild(item);
+                    });
+                } else {
+                    container.innerHTML = `<p class="error">Error: ${data.message}</p>`;
+                }
+            } catch (error) {
+                container.innerHTML = `<p class="error">Failed to load history: ${error.message}</p>`;
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', loadHistory);
+    </script>
+    
+    <style>
+        .file-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .file-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .file-icon {
+            font-size: 1.5rem;
+            color: var(--primary-color);
+        }
+        .file-info {
+            flex: 1;
+        }
+        .file-name {
+            font-weight: bold;
+            color: var(--text-primary);
+        }
+        .file-date, .file-size {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+        .file-actions {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+    </style>
+</body>
+</html>

@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zeyta AI - Model Management</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">
+            <i class="fas fa-robot"></i>
+            <span>Zeyta AI</span>
+        </div>
+        <div class="nav-links">
+            <a href="/"><i class="fas fa-home"></i> Home</a>
+            <a href="/tts"><i class="fas fa-volume-up"></i> TTS</a>
+            <a href="/stt"><i class="fas fa-microphone"></i> STT</a>
+            <a href="/chat"><i class="fas fa-comments"></i> Chat</a>
+            <a href="/pipeline"><i class="fas fa-cogs"></i> Pipeline</a>
+            <a href="/models" class="active"><i class="fas fa-cubes"></i> Models</a>
+            <a href="/history"><i class="fas fa-history"></i> History</a>
+            <a href="/system"><i class="fas fa-info-circle"></i> System</a>
+            <a href="/agent"><i class="fas fa-robot"></i> Agent</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h1><i class="fas fa-cubes"></i> Model Management</h1>
+        <p class="subtitle">Load, unload, and configure AI models</p>
+
+        <!-- Status Overview -->
+        <div class="card">
+            <h2><i class="fas fa-heartbeat"></i> Model Status</h2>
+            <div class="status-grid">
+                <div class="status-item" id="status-tts">
+                    <i class="fas fa-volume-up"></i>
+                    <span class="status-label">TTS Model</span>
+                    <span class="status-badge" id="badge-tts">Not Loaded</span>
+                </div>
+                <div class="status-item" id="status-stt">
+                    <i class="fas fa-microphone"></i>
+                    <span class="status-label">STT Model</span>
+                    <span class="status-badge" id="badge-stt">Not Loaded</span>
+                </div>
+                <div class="status-item" id="status-llm">
+                    <i class="fas fa-brain"></i>
+                    <span class="status-label">LLM Model</span>
+                    <span class="status-badge" id="badge-llm">Not Loaded</span>
+                </div>
+                <div class="status-item" id="status-gpu">
+                    <i class="fas fa-microchip"></i>
+                    <span class="status-label">GPU Status</span>
+                    <span class="status-badge" id="badge-gpu">Checking...</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- TTS Model Management -->
+        <div class="card">
+            <h2><i class="fas fa-volume-up"></i> TTS Model (Text-to-Speech)</h2>
+            <div class="model-controls">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="tts-backend-models">Backend:</label>
+                        <select id="tts-backend-models" class="form-control">
+                            <option value="chatterbox">Chatterbox (GPU-enabled)</option>
+                            <option value="piper">Piper (lightweight)</option>
+                            <option value="windows">Windows (pyttsx3)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="tts-device">Device:</label>
+                        <select id="tts-device" class="form-control">
+                            <option value="auto">Auto (GPU if available)</option>
+                            <option value="cuda">Force GPU (CUDA)</option>
+                            <option value="cpu">Force CPU</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="tts-reinstall-models">RTX 50 PyTorch Fix:</label>
+                        <select id="tts-reinstall-models" class="form-control">
+                            <option value="true">Allow auto reinstall</option>
+                            <option value="false">Do not reinstall</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="button-group">
+                    <button onclick="loadTTS()" class="btn btn-primary">
+                        <i class="fas fa-play"></i> Load TTS
+                    </button>
+                    <button onclick="unloadModel('tts')" class="btn btn-danger">
+                        <i class="fas fa-stop"></i> Unload TTS
+                    </button>
+                </div>
+            </div>
+            <div id="tts-info" class="model-info"></div>
+        </div>
+
+        <!-- STT Model Management -->
+        <div class="card">
+            <h2><i class="fas fa-microphone"></i> STT Model (Speech-to-Text)</h2>
+            <div class="model-controls">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="stt-size">Model Size:</label>
+                        <select id="stt-size" class="form-control">
+                            <option value="tiny">Tiny (fast)</option>
+                            <option value="base" selected>Base (balanced)</option>
+                            <option value="small">Small (accurate)</option>
+                            <option value="medium">Medium (very accurate)</option>
+                            <option value="large-v3">Large-v3 (best quality)</option>
+                            <option value="turbo">🚀 Turbo (best overall)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="stt-device">Device:</label>
+                        <select id="stt-device" class="form-control">
+                            <option value="auto">Auto (GPU if available)</option>
+                            <option value="cuda">Force GPU (CUDA)</option>
+                            <option value="cpu">Force CPU</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="stt-compute">Compute Type:</label>
+                        <select id="stt-compute" class="form-control">
+                            <option value="auto">Auto</option>
+                            <option value="float16">Float16 (GPU)</option>
+                            <option value="int8">Int8 (CPU)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="button-group">
+                    <button onclick="loadSTT()" class="btn btn-primary">
+                        <i class="fas fa-play"></i> Load STT
+                    </button>
+                    <button onclick="unloadModel('stt')" class="btn btn-danger">
+                        <i class="fas fa-stop"></i> Unload STT
+                    </button>
+                </div>
+            </div>
+            <div id="stt-info" class="model-info"></div>
+        </div>
+
+        <!-- LLM Model Management -->
+        <div class="card">
+            <h2><i class="fas fa-brain"></i> LLM Model (Language Model)</h2>
+            <div class="model-controls">
+                <p class="info-text">
+                    <i class="fas fa-info-circle"></i> 
+                    LLM uses Brain class from core/brain.py. Device selection is automatic.
+                </p>
+                <div class="button-group">
+                    <button onclick="loadLLM()" class="btn btn-primary">
+                        <i class="fas fa-play"></i> Load LLM
+                    </button>
+                    <button onclick="unloadModel('llm')" class="btn btn-danger">
+                        <i class="fas fa-stop"></i> Unload LLM
+                    </button>
+                </div>
+            </div>
+            <div id="llm-info" class="model-info"></div>
+        </div>
+
+        <!-- Bulk Actions -->
+        <div class="card">
+            <h2><i class="fas fa-tasks"></i> Bulk Actions</h2>
+            <div class="button-group">
+                <button onclick="loadAll()" class="btn btn-success btn-large">
+                    <i class="fas fa-play-circle"></i> Load All Models
+                </button>
+                <button onclick="unloadAll()" class="btn btn-danger btn-large">
+                    <i class="fas fa-stop-circle"></i> Unload All Models
+                </button>
+            </div>
+        </div>
+
+        <!-- Memory Info -->
+        <div class="card">
+            <h2><i class="fas fa-memory"></i> Memory Information</h2>
+            <div id="memory-info" class="info-box">
+                <p><i class="fas fa-info-circle"></i> Unloading models frees GPU/CPU memory.</p>
+                <p><i class="fas fa-lightbulb"></i> Load only the models you need to save resources.</p>
+                <p><i class="fas fa-microchip"></i> GPU models use significantly more memory than CPU models.</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="loading-overlay" class="loading-overlay" style="display: none;">
+        <div class="loading-spinner"></div>
+        <div class="loading-text" id="loading-message">Processing...</div>
+    </div>
+
+    <script src="/static/app.js"></script>
+    <script src="/static/models.js"></script>
+</body>
+</html>

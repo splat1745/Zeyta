@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zeyta AI - Home</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">
+            <i class="fas fa-robot"></i>
+            <span>Zeyta AI</span>
+        </div>
+        <div class="nav-links">
+            <a href="/" class="active"><i class="fas fa-home"></i> Home</a>
+            <a href="/tts"><i class="fas fa-volume-up"></i> TTS</a>
+            <a href="/stt"><i class="fas fa-microphone"></i> STT</a>
+            <a href="/chat"><i class="fas fa-comments"></i> Chat</a>
+            <a href="/pipeline"><i class="fas fa-cogs"></i> Pipeline</a>
+            <a href="/models"><i class="fas fa-cubes"></i> Models</a>
+            <a href="/history"><i class="fas fa-history"></i> History</a>
+            <a href="/system"><i class="fas fa-info-circle"></i> System</a>
+            <a href="/agent"><i class="fas fa-robot"></i> Agent</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="hero">
+            <h1><i class="fas fa-robot"></i> Welcome to Zeyta AI</h1>
+            <p class="hero-subtitle">Your Complete AI Assistant Platform</p>
+            <div style="margin-top: 2rem; display: flex; gap: 1rem; justify-content: center;">
+                <a href="/chat" class="btn btn-primary btn-large"><i class="fas fa-comments"></i> Start Chatting</a>
+                <a href="/system" class="btn btn-secondary btn-large"><i class="fas fa-info-circle"></i> System Status</a>
+            </div>
+        </div>
+
+        <div class="status-panel">
+            <div class="card-header">
+                <h2><i class="fas fa-heartbeat"></i> System Health Dashboard</h2>
+            </div>
+            <div class="status-grid">
+                <div class="status-item" id="status-tts">
+                    <i class="fas fa-volume-up"></i>
+                    <span class="status-label">TTS Model</span>
+                    <span class="status-badge" id="badge-tts">Not Loaded</span>
+                </div>
+                <div class="status-item" id="status-stt">
+                    <i class="fas fa-microphone"></i>
+                    <span class="status-label">STT Model</span>
+                    <span class="status-badge" id="badge-stt">Not Loaded</span>
+                </div>
+                <div class="status-item" id="status-llm">
+                    <i class="fas fa-brain"></i>
+                    <span class="status-label">LLM Model</span>
+                    <span class="status-badge" id="badge-llm">Not Loaded</span>
+                </div>
+                <div class="status-item" id="status-gpu">
+                    <i class="fas fa-microchip"></i>
+                    <span class="status-label">GPU Status</span>
+                    <span class="status-badge" id="badge-gpu">Checking...</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="features-grid">
+            <a href="/tts" class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-volume-up"></i>
+                </div>
+                <h3>Text-to-Speech</h3>
+                <p>Convert text to natural-sounding speech with voice cloning support</p>
+                <div class="feature-tags">
+                    <span class="tag">ChatterboxTTS</span>
+                    <span class="tag">Voice Cloning</span>
+                </div>
+            </a>
+
+            <a href="/stt" class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-microphone"></i>
+                </div>
+                <h3>Speech-to-Text</h3>
+                <p>Transcribe audio files or live microphone input with high accuracy</p>
+                <div class="feature-tags">
+                    <span class="tag">Whisper</span>
+                    <span class="tag">Live Recording</span>
+                </div>
+            </a>
+
+            <a href="/chat" class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-comments"></i>
+                </div>
+                <h3>AI Chat</h3>
+                <p>Engage in conversations with our advanced language model</p>
+                <div class="feature-tags">
+                    <span class="tag">LLM</span>
+                    <span class="tag">Context-Aware</span>
+                </div>
+            </a>
+
+            <a href="/pipeline" class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-cogs"></i>
+                </div>
+                <h3>Full Pipeline</h3>
+                <p>Complete workflow: Audio → Text → AI → Speech</p>
+                <div class="feature-tags">
+                    <span class="tag">End-to-End</span>
+                    <span class="tag">Automated</span>
+                </div>
+            </a>
+
+            <a href="/system" class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-info-circle"></i>
+                </div>
+                <h3>System Info</h3>
+                <p>View hardware status, model information, and dependencies</p>
+                <div class="feature-tags">
+                    <span class="tag">Diagnostics</span>
+                    <span class="tag">Health Check</span>
+                </div>
+            </a>
+
+            <a href="/agent" class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <h3>Agent Mode</h3>
+                <p>Autonomous AI agent with screen analysis and task automation</p>
+                <div class="feature-tags">
+                    <span class="tag">Ollama</span>
+                    <span class="tag">Vision</span>
+                    <span class="tag">Automation</span>
+                </div>
+            </a>
+        </div>
+
+        <div class="info-panel">
+            <h2><i class="fas fa-question-circle"></i> Quick Start Guide</h2>
+            <div class="steps" style="display: flex; flex-direction: column; gap: 1.5rem;">
+                <div class="step" style="display: flex; gap: 1.5rem; align-items: flex-start;">
+                    <div class="step-number" style="background: var(--primary-color); color: #000; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.2rem; flex-shrink: 0;">1</div>
+                    <div class="step-content">
+                        <h4 style="margin-bottom: 0.5rem; color: var(--primary-color);">Initialize Models</h4>
+                        <p style="color: var(--text-secondary);">Navigate to any feature page and click "Initialize Model" to load the required AI models.</p>
+                    </div>
+                </div>
+                <div class="step" style="display: flex; gap: 1.5rem; align-items: flex-start;">
+                    <div class="step-number" style="background: var(--secondary-color); color: #fff; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.2rem; flex-shrink: 0;">2</div>
+                    <div class="step-content">
+                        <h4 style="margin-bottom: 0.5rem; color: var(--secondary-color);">Choose Your Feature</h4>
+                        <p style="color: var(--text-secondary);">Select from TTS, STT, Chat, or Full Pipeline based on what you want to accomplish.</p>
+                    </div>
+                </div>
+                <div class="step" style="display: flex; gap: 1.5rem; align-items: flex-start;">
+                    <div class="step-number" style="background: var(--success-color); color: #000; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.2rem; flex-shrink: 0;">3</div>
+                    <div class="step-content">
+                        <h4 style="margin-bottom: 0.5rem; color: var(--success-color);">Start Using!</h4>
+                        <p style="color: var(--text-secondary);">Follow the on-screen instructions for each feature. All outputs are saved automatically.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 Zeyta AI. All rights reserved.</p>
+    </footer>
+
+    <script src="/static/app.js"></script>
+    <script>
+        // Update status on page load
+        updateStatus();
+        
+        // Refresh status every 5 seconds
+        setInterval(updateStatus, 5000);
+    </script>
+</body>
+</html>

@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zeyta AI - Pipeline Builder</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .pipeline-container {
+            display: flex;
+            gap: 2rem;
+            height: calc(100vh - 200px);
+        }
+        
+        .sidebar {
+            width: 250px;
+            background: var(--card-bg);
+            border: var(--glass-border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            overflow-y: auto;
+        }
+        
+        .sidebar h3 {
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+        
+        .draggable-block {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 1rem;
+            border-radius: 8px;
+            cursor: grab;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            transition: all 0.2s ease;
+        }
+        
+        .draggable-block:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--primary-color);
+            transform: translateY(-2px);
+        }
+        
+        .draggable-block i {
+            font-size: 1.2rem;
+            color: var(--primary-color);
+        }
+        
+        .main-canvas {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .pipeline-dropzone {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.2);
+            border: 2px dashed var(--border-color);
+            border-radius: 16px;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column; /* Vertical layout for PC */
+            gap: 1rem;
+            overflow-y: auto; /* Vertical scroll */
+            overflow-x: hidden;
+            position: relative;
+            transition: all 0.3s ease;
+            align-items: center;
+        }
+        
+        .pipeline-dropzone.drag-over {
+            background: rgba(0, 242, 255, 0.05);
+            border-color: var(--primary-color);
+        }
+        
+        .placeholder-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: var(--text-secondary);
+            pointer-events: none;
+            text-align: center;
+            width: 100%;
+        }
+        
+        .pipeline-block {
+            background: var(--card-bg);
+            border: 1px solid var(--primary-color);
+            padding: 1.5rem;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            animation: slideIn 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            width: 100%; /* Full width */
+            max-width: 800px; /* Reasonable max width */
+            flex-shrink: 0;
+        }
+        
+        .block-content {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .block-icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(0, 242, 255, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-color);
+            font-size: 1.2rem;
+        }
+        
+        .block-info h4 {
+            margin: 0;
+            font-size: 1rem;
+        }
+        
+        .block-info p {
+            margin: 0;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+        
+        .block-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .block-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+        
+        .block-btn:hover {
+            color: var(--danger-color);
+            background: rgba(255, 0, 85, 0.1);
+        }
+        
+        .connector {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--text-secondary);
+            font-size: 1.5rem;
+            padding: 0 0.5rem;
+            flex-shrink: 0;
+        }
+        
+        .pipeline-controls {
+            display: flex;
+            gap: 1rem;
+            padding: 1rem;
+            background: var(--card-bg);
+            border-radius: 12px;
+            border: var(--glass-border);
+        }
+        
+        .execution-log {
+            height: 150px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 8px;
+            padding: 1rem;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+        
+        .log-entry {
+            margin-bottom: 0.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding-bottom: 0.5rem;
+        }
+        
+        .log-entry.success { color: var(--success-color); }
+        .log-entry.error { color: var(--danger-color); }
+        .log-entry.info { color: var(--primary-color); }
+        
+        /* Config inputs inside blocks */
+        .block-config {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            display: none;
+        }
+        
+        .pipeline-block.expanded .block-config {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">
+            <i class="fas fa-robot"></i>
+            <span>Zeyta AI</span>
+        </div>
+        <div class="nav-links">
+            <a href="/"><i class="fas fa-home"></i> Home</a>
+            <a href="/tts"><i class="fas fa-volume-up"></i> TTS</a>
+            <a href="/stt"><i class="fas fa-microphone"></i> STT</a>
+            <a href="/chat"><i class="fas fa-comments"></i> Chat</a>
+            <a href="/pipeline" class="active"><i class="fas fa-cogs"></i> Pipeline</a>
+            <a href="/models"><i class="fas fa-cubes"></i> Models</a>
+            <a href="/history"><i class="fas fa-history"></i> History</a>
+            <a href="/system"><i class="fas fa-info-circle"></i> System</a>
+            <a href="/agent"><i class="fas fa-robot"></i> Agent</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="page-header">
+            <h1><i class="fas fa-project-diagram"></i> Pipeline Builder</h1>
+            <p>Drag and drop blocks to create custom AI workflows</p>
+        </div>
+
+        <div class="pipeline-container">
+            <div class="sidebar">
+                <h3>Input Blocks</h3>
+                <div class="draggable-block" draggable="true" data-type="input-mic">
+                    <i class="fas fa-microphone"></i> Microphone
+                </div>
+                <div class="draggable-block" draggable="true" data-type="input-file">
+                    <i class="fas fa-file-audio"></i> Audio File
+                </div>
+                <div class="draggable-block" draggable="true" data-type="input-text">
+                    <i class="fas fa-keyboard"></i> Text Input
+                </div>
+                
+                <h3>Processing Blocks</h3>
+                <div class="draggable-block" draggable="true" data-type="stt">
+                    <i class="fas fa-language"></i> STT (Whisper)
+                </div>
+                <div class="draggable-block" draggable="true" data-type="llm">
+                    <i class="fas fa-brain"></i> LLM (AI Chat)
+                </div>
+                <div class="draggable-block" draggable="true" data-type="tts">
+                    <i class="fas fa-volume-up"></i> TTS (Speech)
+                </div>
+                
+                <h3>Output Blocks</h3>
+                <div class="draggable-block" draggable="true" data-type="output-audio">
+                    <i class="fas fa-headphones"></i> Audio Player
+                </div>
+                <div class="draggable-block" draggable="true" data-type="output-text">
+                    <i class="fas fa-file-alt"></i> Text Display
+                </div>
+            </div>
+            
+            <div class="main-canvas">
+                <div class="pipeline-dropzone" id="pipeline-dropzone">
+                    <div class="placeholder-text">Drag blocks here to build your pipeline</div>
+                </div>
+                
+                <div class="pipeline-controls">
+                    <button class="btn btn-success" onclick="executePipeline()">
+                        <i class="fas fa-play"></i> Run Pipeline
+                    </button>
+                    <button class="btn btn-danger" onclick="clearPipeline()">
+                        <i class="fas fa-trash"></i> Clear
+                    </button>
+                    <div style="flex:1"></div>
+                    <div class="status-badge" id="pipeline-status">Ready</div>
+                </div>
+                
+                <div id="execution-log" class="execution-log">
+                    <div class="log-entry">System ready. Build a pipeline and click Run.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Hidden file input for file blocks -->
+    <input type="file" id="hidden-file-input" style="display:none" accept="audio/*">
+
+    <footer>
+        <p>&copy; 2025 Zeyta AI. All rights reserved.</p>
+    </footer>
+
+    <script src="/static/app.js"></script>
+    <script src="/static/pipeline.js"></script>
+</body>
+</html>

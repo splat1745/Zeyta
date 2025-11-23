@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zeyta AI - Text-to-Speech</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="compact-page">
+    <nav class="navbar">
+        <div class="nav-brand">
+            <i class="fas fa-robot"></i>
+            <span>Zeyta AI</span>
+        </div>
+        <div class="nav-links">
+            <a href="/"><i class="fas fa-home"></i> Home</a>
+            <a href="/tts" class="active"><i class="fas fa-volume-up"></i> TTS</a>
+            <a href="/stt"><i class="fas fa-microphone"></i> STT</a>
+            <a href="/chat"><i class="fas fa-comments"></i> Chat</a>
+            <a href="/pipeline"><i class="fas fa-cogs"></i> Pipeline</a>
+            <a href="/models"><i class="fas fa-cubes"></i> Models</a>
+            <a href="/history"><i class="fas fa-history"></i> History</a>
+            <a href="/system"><i class="fas fa-info-circle"></i> System</a>
+            <a href="/agent"><i class="fas fa-robot"></i> Agent</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="page-header">
+            <h1><i class="fas fa-volume-up"></i> Text-to-Speech</h1>
+            <p>Generate natural-sounding speech from text</p>
+        </div>
+
+        <div class="model-status">
+            <div class="status-badge" id="tts-status">Not Loaded</div>
+            <button class="btn btn-primary" id="init-btn" onclick="initializeTTS()">
+                <i class="fas fa-power-off"></i> Initialize TTS
+            </button>
+        </div>
+
+        <div class="control-panel">
+            <div class="form-group">
+                <label for="tts-text">
+                    <i class="fas fa-keyboard"></i> Enter Text to Synthesize
+                </label>
+                <textarea id="tts-text" rows="4" placeholder="Type or paste your text here..."></textarea>
+            </div>
+
+            <div class="settings-grid" style="margin-bottom: 1rem;">
+                <div class="form-group">
+                    <label for="tts-backend"><i class="fas fa-cogs"></i> Engine</label>
+                    <select id="tts-backend">
+                        <option value="chatterbox">Chatterbox (High Quality)</option>
+                        <option value="piper">Piper (Fast)</option>
+                        <option value="windows">System Default</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="tts-format"><i class="fas fa-file-audio"></i> Format</label>
+                    <select id="tts-format">
+                        <option value="wav">WAV</option>
+                        <option value="mp3">MP3</option>
+                        <option value="ogg">OGG</option>
+                    </select>
+                </div>
+            </div>
+
+            <details class="advanced-settings-details" style="background: rgba(0,0,0,0.2); padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; border: 1px solid var(--border-color);">
+                <summary style="cursor: pointer; color: var(--primary-color); font-weight: bold; outline: none;">
+                    <i class="fas fa-sliders-h"></i> Advanced Configuration & Voice Cloning
+                </summary>
+                
+                <div style="margin-top: 1.5rem;">
+                    <div class="form-group">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                            <label style="margin-bottom: 0;">
+                                <i class="fas fa-fingerprint"></i> Voice Cloning Reference
+                            </label>
+                            <button class="btn btn-secondary btn-sm" onclick="openCloneModal()">
+                                <i class="fas fa-microphone"></i> Record New Sample
+                            </button>
+                        </div>
+                        
+                        <div class="file-upload-area" id="ref-upload-area" style="padding: 1rem;">
+                            <input type="file" id="ref-audio" accept="audio/*" onchange="handleReferenceUpload(this)">
+                            <div class="upload-placeholder">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                <p>Drop reference audio here</p>
+                            </div>
+                            <div class="upload-success" style="display:none;">
+                                <i class="fas fa-check-circle"></i>
+                                <span id="ref-filename"></span>
+                                <button class="btn btn-sm btn-danger" onclick="clearReference()" style="margin-left: 1rem;">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="settings-grid">
+                        <div class="form-group">
+                            <label for="temperature">Temperature: <span id="temp-value">0.8</span></label>
+                            <input type="range" id="temperature" min="0" max="1" step="0.1" value="0.8" 
+                                   oninput="document.getElementById('temp-value').textContent = this.value">
+                        </div>
+                        <div class="form-group">
+                            <label for="exaggeration">Exaggeration: <span id="exag-value">0.5</span></label>
+                            <input type="range" id="exaggeration" min="0" max="1" step="0.1" value="0.5"
+                                   oninput="document.getElementById('exag-value').textContent = this.value">
+                        </div>
+                        <div class="form-group">
+                            <label for="cfg-weight">CFG Weight: <span id="cfg-value">0.5</span></label>
+                            <input type="range" id="cfg-weight" min="0" max="1" step="0.1" value="0.5"
+                                   oninput="document.getElementById('cfg-value').textContent = this.value">
+                        </div>
+                    </div>
+                </div>
+            </details>
+
+            <button class="btn btn-success btn-large" onclick="generateTTS()" style="width: 100%;">
+                <i class="fas fa-magic"></i> Generate Speech
+            </button>
+        </div>
+
+        <div class="output-panel" id="output-panel" style="display:none;">
+            <div class="card-header">
+                <h3><i class="fas fa-headphones"></i> Generated Audio</h3>
+            </div>
+            <div class="card-body">
+                <audio id="audio-player" controls style="width: 100%; margin-bottom: 1.5rem;"></audio>
+                
+                <div class="stats-container" style="margin-top: 1.5rem; background: rgba(0,0,0,0.2); padding: 1rem; border-radius: 8px;">
+                    <h4 style="margin-bottom: 1rem; color: var(--text-secondary); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;"><i class="fas fa-chart-line"></i> Performance Metrics</h4>
+                    <div class="latency-graph" id="latency-graph" style="height: 100px; margin-bottom: 1rem;">
+                        <!-- Graph rendered by JS -->
+                    </div>
+                    <div style="display: flex; justify-content: space-around; font-size: 0.9rem; color: var(--text-secondary);">
+                        <div style="text-align: center;">
+                            <div style="font-size: 0.8rem; margin-bottom: 0.25rem;">Latency</div>
+                            <strong id="latency-val" style="color: var(--primary-color); font-size: 1.2rem;">0ms</strong>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="font-size: 0.8rem; margin-bottom: 0.25rem;">Real-Time Factor</div>
+                            <strong id="rtf-val" style="color: var(--success-color); font-size: 1.2rem;">0.0x</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="output-actions" style="margin-top: 1.5rem; display: flex; justify-content: flex-end;">
+                    <a id="download-link" class="btn btn-secondary" download>
+                        <i class="fas fa-download"></i> Download Audio
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent History -->
+        <div class="card">
+            <div class="card-header">
+                <h3><i class="fas fa-history"></i> Recent Generations</h3>
+            </div>
+            <div class="card-body">
+                <div id="recent-tts-list" style="color: var(--text-secondary); font-style: italic;">
+                    No recent generations yet.
+                </div>
+            </div>
+        </div>
+
+        <!-- Clone Voice Modal -->
+        <div class="modal-overlay" id="clone-modal">
+            <div class="modal-card">
+                <div class="modal-header" style="display: flex; justify-content: space-between; margin-bottom: 1.5rem;">
+                    <h2><i class="fas fa-microphone-alt"></i> Clone Your Voice</h2>
+                    <button class="btn btn-sm btn-secondary" onclick="closeCloneModal()"><i class="fas fa-times"></i></button>
+                </div>
+                <div class="modal-body">
+                    <p>Read the following text clearly to create a voice sample:</p>
+                    <div class="script-box" style="background: rgba(0,0,0,0.3); padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; font-style: italic; border-left: 3px solid var(--primary-color);">
+                        "The quick brown fox jumps over the lazy dog. I am ready to create my custom AI voice clone using Zeyta AI's advanced technology."
+                    </div>
+                    
+                    <div class="visualizer-container" id="clone-visualizer">
+                        <!-- Visualizer bars -->
+                    </div>
+
+                    <div style="display: flex; justify-content: center; gap: 1rem; margin-top: 1.5rem;">
+                        <button class="btn btn-danger" id="start-record-btn" onclick="startCloneRecording()">
+                            <i class="fas fa-circle"></i> Record
+                        </button>
+                        <button class="btn btn-warning" id="stop-record-btn" onclick="stopCloneRecording()" disabled>
+                            <i class="fas fa-stop"></i> Stop
+                        </button>
+                        <button class="btn btn-success" id="use-recording-btn" onclick="useCloneRecording()" disabled>
+                            <i class="fas fa-check"></i> Use Recording
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="loading-overlay" id="loading-overlay" style="display:none;">
+            <div class="spinner"></div>
+            <p>Generating speech...</p>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 Zeyta AI. All rights reserved.</p>
+    </footer>
+
+    <script src="/static/app.js"></script>
+    <script src="/static/tts.js"></script>
+</body>
+</html>

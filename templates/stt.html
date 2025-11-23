@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zeyta AI - Speech-to-Text</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="compact-page">
+    <nav class="navbar">
+        <div class="nav-brand">
+            <i class="fas fa-robot"></i>
+            <span>Zeyta AI</span>
+        </div>
+        <div class="nav-links">
+            <a href="/"><i class="fas fa-home"></i> Home</a>
+            <a href="/tts"><i class="fas fa-volume-up"></i> TTS</a>
+            <a href="/stt" class="active"><i class="fas fa-microphone"></i> STT</a>
+            <a href="/chat"><i class="fas fa-comments"></i> Chat</a>
+            <a href="/pipeline"><i class="fas fa-cogs"></i> Pipeline</a>
+            <a href="/models"><i class="fas fa-cubes"></i> Models</a>
+            <a href="/history"><i class="fas fa-history"></i> History</a>
+            <a href="/system"><i class="fas fa-info-circle"></i> System</a>
+            <a href="/agent"><i class="fas fa-robot"></i> Agent</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="page-header">
+            <h1><i class="fas fa-microphone"></i> Speech-to-Text</h1>
+            <p>Transcribe audio files or live microphone input</p>
+        </div>
+
+        <div class="model-status">
+            <div class="status-badge" id="stt-status">Not Loaded</div>
+            <button class="btn btn-primary" id="init-btn" onclick="showSTTSettings()">
+                <i class="fas fa-power-off"></i> Initialize STT
+            </button>
+        </div>
+
+        <div class="settings-modal" id="stt-settings-modal" style="display:none;">
+            <div class="modal-content">
+                <h3><i class="fas fa-cog"></i> STT Model Settings</h3>
+                <div class="form-group">
+                    <label for="model-size">Model Size</label>
+                    <select id="model-size">
+                        <option value="tiny">Tiny (Fast, Less Accurate)</option>
+                        <option value="base" selected>Base (Balanced)</option>
+                        <option value="small">Small (Good Balance)</option>
+                        <option value="medium">Medium (High Accuracy)</option>
+                        <option value="large-v3">Large-v3 (Best Quality, Slower)</option>
+                        <option value="turbo">🚀 Turbo (Fastest + Most Accurate)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="device">Device</label>
+                    <select id="device">
+                        <option value="auto" selected>Auto (GPU if available)</option>
+                        <option value="cuda">CUDA (GPU)</option>
+                        <option value="cpu">CPU</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="compute-type">Compute Type</label>
+                    <select id="compute-type">
+                        <option value="auto" selected>Auto (Recommended)</option>
+                        <option value="float16">Float16 (GPU)</option>
+                        <option value="int8">Int8 (CPU/Fast)</option>
+                        <option value="int8_float16">Int8_Float16</option>
+                    </select>
+                </div>
+                <div class="modal-actions">
+                    <button class="btn btn-success" onclick="initializeSTT()">
+                        <i class="fas fa-check"></i> Initialize
+                    </button>
+                    <button class="btn btn-secondary" onclick="closeSTTSettings()">
+                        <i class="fas fa-times"></i> Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('file')">
+                <i class="fas fa-file-audio"></i> Transcribe File
+            </button>
+            <button class="tab-btn" onclick="switchTab('live')">
+                <i class="fas fa-microphone-alt"></i> Live Recording
+            </button>
+        </div>
+
+        <div class="tab-content" id="file-tab">
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-file-audio"></i> File Transcription</h2>
+                </div>
+                <div class="card-body">
+                    <div class="form-group">
+                        <div class="file-drop-zone" id="audio-upload-area" onclick="document.getElementById('audio-file').click()">
+                            <input type="file" id="audio-file" accept="audio/*" onchange="handleAudioUpload(this)" style="display: none;">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <h3>Drop Audio File Here</h3>
+                            <p style="color: var(--text-secondary);">or click to browse</p>
+                            <div class="supported-formats" style="margin-top: 1rem; font-size: 0.8rem; color: var(--text-secondary); opacity: 0.7;">
+                                WAV, MP3, OGG, FLAC, M4A, WebM
+                            </div>
+                            <div class="upload-success" style="display:none; margin-top: 1rem; color: var(--success-color);">
+                                <i class="fas fa-check-circle"></i> <span id="audio-filename">filename.wav</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="text-align: center; margin-top: 2rem;">
+                        <button class="btn btn-success btn-large" onclick="transcribeFile()" style="min-width: 200px;">
+                            <i class="fas fa-language"></i> Start Transcription
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-content" id="live-tab" style="display:none;">
+            <div class="stt-studio-panel">
+                <div class="studio-header">
+                    <div class="studio-title">
+                        <h2 style="margin:0; color: var(--primary-color);"><i class="fas fa-microphone-alt"></i> Live Studio</h2>
+                    </div>
+                    <div class="studio-settings">
+                        <select id="audio-source" style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 0.5rem; border-radius: 8px;">
+                            <option value="default">Default Microphone</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="studio-display">
+                    <div class="visualizer-container" id="live-visualizer">
+                        <!-- Bars will be injected by JS -->
+                        <div style="color: var(--text-secondary); font-family: monospace;">INITIALIZING AUDIO ENGINE...</div>
+                    </div>
+                </div>
+
+                <div class="studio-controls">
+                    <div class="record-btn-wrapper">
+                        <div class="record-btn-ring" id="record-ring"></div>
+                        <button class="record-btn-main" id="record-btn" onclick="toggleRecording()">
+                            <i class="fas fa-microphone"></i>
+                        </button>
+                    </div>
+                    <div id="recording-timer" style="font-family: 'Consolas', monospace; font-size: 1.5rem; color: var(--text-primary);">00:00</div>
+                    <div id="recording-status-text" style="color: var(--text-secondary); font-size: 0.9rem; letter-spacing: 1px;">READY TO RECORD</div>
+                </div>
+
+                <div class="studio-stats">
+                    <div class="stat-box">
+                        <div class="stat-label">VAD Status</div>
+                        <div class="stat-value" id="vad-status" style="color: var(--text-secondary);">IDLE</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Latency</div>
+                        <div class="stat-value" id="stt-latency" style="color: var(--primary-color);">0ms</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Confidence</div>
+                        <div class="stat-value" id="stt-confidence" style="color: var(--success-color);">--</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="output-panel" id="transcript-panel" style="display:none;">
+            <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+                <h3><i class="fas fa-file-alt"></i> Transcription Result</h3>
+                <div class="output-actions" style="display: flex; gap: 0.5rem;">
+                    <button class="btn btn-secondary" onclick="copyTranscript()" title="Copy">
+                        <i class="fas fa-copy"></i>
+                    </button>
+                    <button class="btn btn-primary" onclick="saveTranscript()" title="Save">
+                        <i class="fas fa-save"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="transcript-box" id="transcript-text" style="background: rgba(10, 10, 15, 0.6); padding: 2rem; border-radius: 8px; border: 1px solid var(--border-color); min-height: 150px; font-size: 1.1rem; line-height: 1.8; color: #e0e0e0; font-family: 'Segoe UI', sans-serif; box-shadow: inset 0 0 20px rgba(0,0,0,0.5);"></div>
+                
+                <div class="transcript-info" style="display: flex; gap: 2rem; margin-top: 1rem; color: var(--text-secondary); font-size: 0.85rem; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 1rem;">
+                    <span id="language-info"><i class="fas fa-globe"></i> Language: --</span>
+                    <span id="confidence-info"><i class="fas fa-check-circle"></i> Confidence: --</span>
+                    <span id="word-count"><i class="fas fa-font"></i> Words: 0</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Transcriptions -->
+        <div class="card">
+            <div class="card-header">
+                <h3><i class="fas fa-history"></i> Recent Transcriptions</h3>
+            </div>
+            <div class="card-body">
+                <div id="recent-stt-list">
+                    <div class="empty-state">
+                        <i class="fas fa-scroll"></i>
+                        <h4>No Transcriptions Yet</h4>
+                        <p>Upload a file or start a live recording to see your history here.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="loading-overlay" id="loading-overlay" style="display:none;">
+            <div class="spinner"></div>
+            <p>Transcribing audio...</p>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 Zeyta AI. All rights reserved.</p>
+    </footer>
+
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <script src="/static/app.js"></script>
+    <script src="/static/stt.js"></script>
+</body>
+</html>

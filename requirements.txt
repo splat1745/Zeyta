@@ -1,0 +1,58 @@
+# Zeyta AI Web Application - Python Dependencies
+# All dependencies are auto-installed by web_app.py
+# You can also install manually with: pip install -r requirements.txt
+
+# First upgrade pip and setuptools for Python 3.12 compatibility
+pip>=24.0
+setuptools>=69.0.0
+wheel>=0.42.0
+
+# Web Framework
+flask>=3.0.0
+flask-cors>=4.0.0
+flask-socketio>=5.3.0
+werkzeug>=3.0.0
+
+# Deep Learning & AI (PyTorch CUDA 12.8 nightly for RTX 50-series)
+# Use cu128 for CUDA 12.8 support (RTX 50-series Blackwell)
+# PyTorch 2.10+ nightly includes flash-attention, CUDA graphs, and improved compile
+--extra-index-url https://download.pytorch.org/whl/nightly/cu128
+torch>=2.10.0.dev
+torchaudio>=2.10.0.dev
+torchvision>=0.25.0.dev
+transformers>=4.35.0
+# Triton for torch.compile optimizations (required for reduce-overhead mode)
+triton>=3.0.0
+# Optional: xformers for additional attention optimizations
+xformers>=0.0.23
+
+# Core dependencies (NumPy 1.x for binary compatibility)
+numpy>=1.24.0,<2.0
+scipy>=1.11.4
+
+# Audio Processing
+sounddevice>=0.4.6
+soundfile>=0.12.1
+librosa>=0.10.0
+
+# Text-to-Speech
+chatterbox-tts
+pyttsx3>=2.90
+# Piper is often installed via pip as `piper-tts` or `piper`. If missing, uncomment to enable
+# piper-tts
+
+# Speech-to-Text
+faster-whisper>=1.0.0
+
+# Voice Activity Detection
+webrtcvad>=2.0.10
+
+# Additional Utilities
+python-socketio>=5.10.0
+psutil>=5.9.0  # For CPU core detection in optimizer
+
+# Agent Mode Dependencies
+requests>=2.31.0
+pillow>=10.0.0
+pyautogui>=0.9.54
+pywin32>=306  # For overlay click-through on Windows
