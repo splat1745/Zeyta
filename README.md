@@ -1,4 +1,4 @@
-# Zeyta AI Web Application 🤖
+# Zeyta AI Web Playground
 
 A fully self-contained, locally-hosted web application providing comprehensive AI capabilities including Text-to-Speech, Speech-to-Text, Large Language Model chat, Autonomous Agent Mode, and a Visual Pipeline Builder.
 
