@@ -119,8 +119,10 @@ class OllamaClient:
                     return {"success": True, "response": response}
                 else:
                     return {"success": True, "response": response.json().get('response', '')}
+            elif response.status_code == 400 and images:
+                return {"success": False, "error": f"Model '{model}' does not support vision (images). Please select a vision-capable model like 'llava' or 'qwen3-vl'."}
             else:
-                return {"success": False, "error": f"HTTP {response.status_code}"}
+                return {"success": False, "error": f"HTTP {response.status_code}: {response.text}"}
                 
         except Exception as e:
             logging.error(f"Generation failed: {e}")
@@ -159,8 +161,10 @@ class OllamaClient:
                     "message": data.get('message', {}),
                     "response": data.get('message', {}).get('content', '')
                 }
+            elif response.status_code == 400 and images:
+                return {"success": False, "error": f"Model '{model}' does not support vision (images). Please select a vision-capable model like 'llava' or 'qwen2-vl'."}
             else:
-                return {"success": False, "error": f"HTTP {response.status_code}"}
+                return {"success": False, "error": f"HTTP {response.status_code}: {response.text}"}
                 
         except Exception as e:
             logging.error(f"Chat failed: {e}")
