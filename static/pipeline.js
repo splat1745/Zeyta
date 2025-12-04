@@ -143,6 +143,14 @@ function generateConfigHTML(type, blockId) {
                     <option value="anthropic">Anthropic</option>
                 </select>
             `;
+        case 'tts':
+            return `
+                <div class="form-group">
+                    <label>Voice Cloning (Optional)</label>
+                    <button class="btn btn-secondary btn-sm" onclick="triggerReferenceUpload(${blockId})">Upload Reference Audio</button>
+                    <span id="ref-filename-${blockId}" style="margin-left: 10px; font-size: 0.8rem; color: var(--text-secondary)">No file selected</span>
+                </div>
+            `;
         default:
             return '<p style="font-size: 0.8rem; color: var(--text-secondary)">No configuration needed</p>';
     }
@@ -204,6 +212,38 @@ function triggerFileUpload(blockId) {
             const file = e.target.files[0];
             updateBlockConfig(blockId, 'file', file);
             document.getElementById(`filename-${blockId}`).textContent = file.name;
+        }
+    };
+    input.click();
+}
+
+function triggerReferenceUpload(blockId) {
+    const input = document.getElementById('hidden-file-input');
+    input.onchange = async (e) => {
+        if (e.target.files[0]) {
+            const file = e.target.files[0];
+            
+            // Upload immediately
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            try {
+                const response = await fetch('/api/upload/reference', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    updateBlockConfig(blockId, 'reference_audio', data.filename);
+                    document.getElementById(`ref-filename-${blockId}`).textContent = file.name;
+                    log(`Reference audio uploaded: ${file.name}`, 'success');
+                } else {
+                    log(`Upload failed: ${data.message}`, 'error');
+                }
+            } catch (error) {
+                log(`Upload error: ${error.message}`, 'error');
+            }
         }
     };
     input.click();
@@ -308,10 +348,16 @@ async function processBlock(block, inputData) {
             
         case 'tts':
             if (!inputData || inputData.type !== 'text') throw new Error('TTS requires text input');
+            
+            const ttsPayload = { text: inputData.content };
+            if (block.config.reference_audio) {
+                ttsPayload.reference_audio = block.config.reference_audio;
+            }
+            
             const ttsRes = await fetch('/api/tts/generate', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ text: inputData.content })
+                body: JSON.stringify(ttsPayload)
             });
             const ttsData = await ttsRes.json();
             if (!ttsData.success) throw new Error(ttsData.message);
