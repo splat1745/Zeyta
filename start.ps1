@@ -35,6 +35,44 @@ if (Test-Path "$cudnnPath\cudnn_ops64_9.dll") {
 }
 Write-Host ""
 
+# ============================================================================
+# SYSTEM INTEGRITY CHECK
+# ============================================================================
+Write-Host "🔍 Checking system integrity..." -ForegroundColor Cyan
+
+# 1. Ensure Critical Directories Exist
+$criticalDirs = @("models", "uploads", "chat_logs", "agent_screenshots", "debug_files", "models/piper")
+foreach ($dir in $criticalDirs) {
+    if (-not (Test-Path $dir)) {
+        New-Item -ItemType Directory -Path $dir -Force | Out-Null
+        Write-Host "   ✅ Created missing directory: $dir" -ForegroundColor Green
+    }
+}
+
+# 2. Check for Chatterbox Python 3.11 Venv (Required for TTS)
+$venvPath = ".\venv_chatterbox"
+if (-not (Test-Path $venvPath)) {
+    Write-Host "⚠️  Chatterbox venv (Python 3.11) not found!" -ForegroundColor Yellow
+    Write-Host "   Initializing setup script..." -ForegroundColor Gray
+    
+    if (Test-Path ".\setup\setup_chatterbox.ps1") {
+        # Run the setup script
+        & ".\setup\setup_chatterbox.ps1"
+        
+        if ($LASTEXITCODE -eq 0) {
+             Write-Host "✅ Chatterbox venv created successfully." -ForegroundColor Green
+        } else {
+             Write-Host "❌ Failed to create Chatterbox venv." -ForegroundColor Red
+             # We don't exit here, as the main app might still run without TTS
+        }
+    } else {
+        Write-Host "❌ Error: setup_chatterbox.ps1 not found in .\setup\" -ForegroundColor Red
+    }
+} else {
+    Write-Host "✅ Chatterbox venv found." -ForegroundColor Green
+}
+Write-Host ""
+
 # Start the web server
 Write-Host "🚀 Starting web server..." -ForegroundColor Cyan
 Write-Host "   Server will be available at: https://localhost:5000" -ForegroundColor White

@@ -37,7 +37,8 @@ A fully self-contained, locally-hosted web application providing comprehensive A
 - Real-time execution logging
 
 ### ⚙️ **System Management**
-- Automatic dependency installation and conflict resolution
+- **Smart Self-Healing Setup**: Automatically detects missing environments, creates virtual environments, and resolves dependency conflicts (e.g., fixing broken pip installs).
+- **System Integrity Checks**: Verifies critical folders and files on every startup.
 - Real-time system status monitoring (CPU, RAM, GPU VRAM)
 - GPU/CPU detection with automatic fallback
 - Model configuration display
@@ -48,11 +49,11 @@ A fully self-contained, locally-hosted web application providing comprehensive A
 **Cloning the repository is not enough!** You must ensure the AI models are available:
 1.  **Install Ollama**: Download from [ollama.com](https://ollama.com).
 2.  **Pull a Chat Model**: Run `ollama pull llama3` (or `mistral`, `gemma`, etc.) in your terminal.
-3.  **First Run Downloads**: The app will automatically download TTS and STT models on the first launch. Ensure you have a stable internet connection.
+3.  **First Run Downloads**: The app will download TTS and STT models on the first launch automatically. Ensure you have a stable internet connection.
 
 ### Option 1: Simple Run (Recommended)
 ```powershell
-# Just run the application - it will install dependencies automatically
+# Run the application as it will install dependencies automatically (may not be enough - Double check!)
 .\start.ps1
 # OR
 .\start.bat
@@ -99,8 +100,11 @@ AI-RELEASE/
 ├── tts_optimizer.py    # RTX 50-series specific optimizations
 ├── requirements.txt    # Python dependencies
 ├── README.md           # This file
-├── start.ps1           # PowerShell startup script
-├── start.bat           # Batch startup script
+├── start.ps1           # PowerShell startup script (with integrity checks)
+├── start.bat           # Batch startup script (with integrity checks)
+├── setup/
+│   ├── smart_setup.py  # Self-healing dependency installer
+│   └── ...
 ├── templates/          # HTML templates
 │   ├── index.html      # Home page
 │   ├── tts.html        # Text-to-Speech page
