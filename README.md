@@ -44,6 +44,12 @@ A fully self-contained, locally-hosted web application providing comprehensive A
 
 ## 🚀 Quick Start
 
+### ⚠️ Prerequisite: Download Models
+**Cloning the repository is not enough!** You must ensure the AI models are available:
+1.  **Install Ollama**: Download from [ollama.com](https://ollama.com).
+2.  **Pull a Chat Model**: Run `ollama pull llama3` (or `mistral`, `gemma`, etc.) in your terminal.
+3.  **First Run Downloads**: The app will automatically download TTS and STT models on the first launch. Ensure you have a stable internet connection.
+
 ### Option 1: Simple Run (Recommended)
 ```powershell
 # Just run the application - it will install dependencies automatically
