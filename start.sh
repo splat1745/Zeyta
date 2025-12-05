@@ -88,30 +88,68 @@ for dir in "${DIRS[@]}"; do
     fi
 done
 
-# 2. Check for Chatterbox Python 3.11 Venv
+# 2. Setup Chatterbox Python 3.11 Venv
+echo -e "${CYAN}Configuring Chatterbox TTS...${NC}"
+
 if [ ! -d "venv_chatterbox" ]; then
-    echo -e "${YELLOW}Chatterbox venv (Python 3.11) not found!${NC}"
-    echo -e "   Initializing smart setup script..."
+    echo "   Chatterbox venv not found. Creating with Python 3.11..."
     
-    python3 setup/smart_setup.py
+    # Get workspace directory
+    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    WORKSPACE_PYTHON="$SCRIPT_DIR/Python-3.11.9/python"
     
-    if [ $? -eq 0 ]; then
-        echo -e "${GREEN}Chatterbox venv created successfully.${NC}"
+    # Check if workspace Python 3.11 exists
+    if [ -f "$WORKSPACE_PYTHON" ]; then
+        echo "   Found Python 3.11.9 at: $WORKSPACE_PYTHON"
+        
+        # Create venv with workspace Python 3.11
+        "$WORKSPACE_PYTHON" -m venv venv_chatterbox
+        
+        if [ $? -eq 0 ]; then
+            # Activate and install Chatterbox with torch 2.1
+            source venv_chatterbox/bin/activate
+            
+            echo "   Installing pip/setuptools..."
+            python -m pip install --upgrade pip setuptools wheel -q
+            
+            echo "   Installing torch 2.1 for GPU (CUDA 12.1)..."
+            python -m pip install torch==2.1.2 torchvision==0.16.2 torchaudio==2.1.2 \
+                --index-url https://download.pytorch.org/whl/cu121 -q 2>/dev/null || true
+            
+            echo "   Installing Chatterbox TTS..."
+            python -m pip install chatterbox-tts -q 2>/dev/null || true
+            
+            deactivate
+            echo -e "${GREEN}Chatterbox Python 3.11 venv created successfully${NC}"
+        else
+            echo -e "${RED}Failed to create venv with Python 3.11${NC}"
+        fi
     else
-        echo -e "${RED}Failed to create Chatterbox venv.${NC}"
+        echo -e "${YELLOW}Workspace Python 3.11 not found at: $WORKSPACE_PYTHON${NC}"
+        echo "   Attempting alternative setup..."
     fi
 else
-    echo -e "${GREEN}Chatterbox venv found.${NC}"
+    echo "Chatterbox venv found."
 fi
 echo ""
 
-# Set CHATTERBOX_PYTHON for the current session if it exists
+# 3. Set CHATTERBOX_PYTHON environment variable
+echo -e "${CYAN}Setting environment variables...${NC}"
+
 if [ -f "venv_chatterbox/bin/python" ]; then
     export CHATTERBOX_PYTHON="$(pwd)/venv_chatterbox/bin/python"
+    echo -e "${GREEN}CHATTERBOX_PYTHON=$CHATTERBOX_PYTHON${NC}"
+    
+    # Verify it's Python 3.11
+    CHATTERBOX_VERSION=$("$CHATTERBOX_PYTHON" --version 2>&1)
+    echo -e "${GREEN}Using: $CHATTERBOX_VERSION${NC}"
 elif [ -f "venv_chatterbox/Scripts/python.exe" ]; then
-    # Fallback if somehow using Windows venv structure on Linux (unlikely but possible in WSL/Wine)
     export CHATTERBOX_PYTHON="$(pwd)/venv_chatterbox/Scripts/python.exe"
+    echo -e "${GREEN}CHATTERBOX_PYTHON=$CHATTERBOX_PYTHON${NC}"
+else
+    echo -e "${YELLOW}Chatterbox venv not ready yet (will be created on first run)${NC}"
 fi
+echo ""
 
 echo -e "${CYAN}Starting web server...${NC}"
 echo "   Server will be available at: https://localhost:5000"
