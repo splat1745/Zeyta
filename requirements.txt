@@ -55,4 +55,4 @@ psutil>=5.9.0  # For CPU core detection in optimizer
 requests>=2.31.0
 pillow>=10.0.0
 pyautogui>=0.9.54
-pywin32>=306  # For overlay click-through on Windows
+pywin32>=306; sys_platform == 'win32'  # For overlay click-through on Windows
