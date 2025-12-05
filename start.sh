@@ -116,6 +116,9 @@ if [ ! -d "venv_chatterbox" ]; then
             python -m pip install torch==2.1.2 torchvision==0.16.2 torchaudio==2.1.2 \
                 --index-url https://download.pytorch.org/whl/cu121 -q 2>/dev/null || true
             
+            echo "   Installing numpy<1.26 for Chatterbox compatibility..."
+            python -m pip install "numpy<1.26" -q 2>/dev/null || true
+            
             echo "   Installing Chatterbox TTS..."
             python -m pip install chatterbox-tts -q 2>/dev/null || true
             
