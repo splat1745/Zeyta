@@ -63,7 +63,8 @@ A fully self-contained, locally-hosted web application providing comprehensive A
 ```powershell
 # Install dependencies first
 pip install -r requirements.txt
-
+```
+```powershell
 # Run the application
 python web_app.py
 ```
