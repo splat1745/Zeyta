@@ -141,7 +141,7 @@ AI-RELEASE/
 3. Ask questions about current events or math problems
 4. The AI will use tools to provide accurate answers
 
-### 5. **Agent Mode**
+### 5. **Agent Mode** (still in beta)
 1. Click "Initialize Agent"
 2. Select an Ollama model (e.g., LLaVA or Qwen-VL for vision)
 3. Type a task: "Open Notepad and write a poem about AI"
