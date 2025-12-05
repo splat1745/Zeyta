@@ -48,19 +48,28 @@ if [ ! -d "venv" ]; then
     python3 -m venv venv
     if [ $? -ne 0 ]; then
         echo -e "${RED}Failed to create virtual environment.${NC}"
-        echo "Trying to install venv package..."
-        sudo apt-get install -y python3.12-venv python3-full
-        python3 -m venv venv
+        echo "Please run: sudo apt-get install -y python3.12-venv python3-full"
+        echo "Then try again."
+        exit 1
     fi
-fi
-
-# Activate venv and install dependencies
-source venv/bin/activate
-echo "Using Python: $(which python)"
-python -m pip install --upgrade pip setuptools wheel -q
-python -m pip install -r requirements.txt
-if [ $? -ne 0 ]; then
-    echo -e "${YELLOW}WARNING: Some packages may have failed to install.${NC}"
+    
+    # Activate venv and install dependencies
+    source venv/bin/activate
+    echo "Using Python: $(which python)"
+    echo "Upgrading pip..."
+    python -m pip install --upgrade pip setuptools wheel --quiet
+    
+    echo "Installing dependencies (this may take 5-10 minutes on first run)..."
+    python -m pip install -r requirements.txt --quiet
+    if [ $? -ne 0 ]; then
+        echo -e "${YELLOW}WARNING: Some packages may have failed to install.${NC}"
+        echo "Attempting to install core packages individually..."
+        # Install core packages that must work
+        python -m pip install flask psutil requests pillow --quiet || true
+    fi
+else
+    echo "Virtual environment found. Activating..."
+    source venv/bin/activate
 fi
 echo ""
 
