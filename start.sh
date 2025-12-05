@@ -41,7 +41,24 @@ python3 --version
 echo ""
 
 echo -e "[2/3] Installing dependencies..."
-pip3 install -r requirements.txt
+
+# Create main venv if it doesn't exist
+if [ ! -d "venv" ]; then
+    echo "Creating Python virtual environment..."
+    python3 -m venv venv
+    if [ $? -ne 0 ]; then
+        echo -e "${RED}Failed to create virtual environment.${NC}"
+        echo "Trying to install venv package..."
+        sudo apt-get install -y python3.12-venv python3-full
+        python3 -m venv venv
+    fi
+fi
+
+# Activate venv and install dependencies
+source venv/bin/activate
+echo "Using Python: $(which python)"
+python -m pip install --upgrade pip setuptools wheel -q
+python -m pip install -r requirements.txt
 if [ $? -ne 0 ]; then
     echo -e "${YELLOW}WARNING: Some packages may have failed to install.${NC}"
 fi
@@ -93,4 +110,9 @@ echo "   (Accept the self-signed certificate warning in your browser)"
 echo "   Press Ctrl+C to stop the server"
 echo ""
 
-python3 web_app.py
+# Ensure venv is activated
+if [ -z "$VIRTUAL_ENV" ]; then
+    source venv/bin/activate
+fi
+
+python web_app.py
