@@ -174,7 +174,7 @@ AI-RELEASE/
 
 **This application is designed for LOCAL USE ONLY**
 - **Agent Mode**: Grants the AI control over your mouse and keyboard. Use with caution and monitor execution.
-- **Web Server**: Runs on all network interfaces (0.0.0.0) by default for local network access.
+- **Web Server**: Runs on all network interfaces (0.0.0.0) by default for local network access (so you can use it on other devices).
 - **No Authentication**: Do not expose to the public internet.
 
 ## 📜 License
