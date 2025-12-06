@@ -2,7 +2,7 @@
 # core/context.py
 """Conversation context manager.
 
-Creates a brand‑new JSON file for each chat session and never merges
+Creates a brand-new JSON file for each chat session and never merges
 previous sessions unless explicitly queried. Provides lightweight helpers
 to list or search past logs on demand (query style) without polluting the
 active conversation history.
