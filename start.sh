@@ -60,13 +60,18 @@ if [ ! -d "venv" ]; then
     python -m pip install --upgrade pip setuptools wheel --quiet
     
     echo "Installing dependencies (this may take 5-10 minutes on first run)..."
-    python -m pip install -r requirements.txt --quiet
-    if [ $? -ne 0 ]; then
-        echo -e "${YELLOW}WARNING: Some packages may have failed to install.${NC}"
-        echo "Attempting to install core packages individually..."
-        # Install core packages that must work
-        python -m pip install flask psutil requests pillow --quiet || true
-    fi
+    # First install core packages
+    python -m pip install flask flask-cors flask-socketio torch torchvision torchaudio transformers faster-whisper --quiet || true
+    
+    # Then install audio/media packages  
+    python -m pip install sounddevice soundfile librosa --quiet || true
+    
+    # Install other dependencies
+    python -m pip install -r requirements.txt --quiet 2>/dev/null || true
+    
+    # Install any missing runtime dependencies
+    python -m pip install cffi --force-reinstall --quiet 2>/dev/null || true
+    python -m pip install webrtcvad pyttsx3 requests pillow opencv-python pyautogui python-socketio psutil -q 2>/dev/null || true
 else
     echo "Virtual environment found. Activating..."
     source venv/bin/activate
