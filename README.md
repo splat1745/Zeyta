@@ -94,7 +94,7 @@ All dependencies are automatically installed on first run:
 ## 📁 Project Structure
 
 ```
-AI-RELEASE/
+Zeyta/
 ├── web_app.py          # Main Flask application with auto-dependency management
 ├── agent.py            # Autonomous agent logic (screen analysis, task execution)
 ├── tts_optimizer.py    # RTX 50-series specific optimizations
