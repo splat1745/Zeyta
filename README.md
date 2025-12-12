@@ -48,7 +48,7 @@ A fully self-contained, locally-hosted web application providing comprehensive A
 ### ⚠️ Prerequisite: Download Models
 **Cloning the repository is not enough!** You must ensure the AI models are available:
 1.  **Install Ollama**: Download from [ollama.com](https://ollama.com).
-2.  **Pull a Chat Model**: Run `ollama pull llama3` (or `mistral`, `gemma`, etc.) in your terminal.
+2.  **Pull a Chat Model**: Run `ollama pull llama3.1` (or `mistral`, `gemma`, etc.) in your terminal (or anything that can run on your system).
 3.  **First Run Downloads**: The app will download TTS and STT models on the first launch automatically. Ensure you have a stable internet connection.
 
 ### Option 1: Simple Run (Recommended)
@@ -77,8 +77,8 @@ Then open your browser to: **https://localhost:5000**
 ### System Requirements
 - **Python**: 3.11 (Voice cloning TTS uses 3.11 strictly)
 - **RAM**: 16GB minimum (32GB recommended for Agent Mode or smarter models)
-- **GPU**: NVIDIA GPU with CUDA support (RTX 3060 or better recommended; RTX 50-series optimized)
-- **Storage**: 20GB free space for models
+- **GPU**: NVIDIA GPU with CUDA support (RTX 3050 or better recommended; RTX 50-series optimized)
+- **Storage**: 20GB+ free space for models
 
 ### Python Dependencies
 All dependencies are automatically installed on first run:
@@ -141,9 +141,9 @@ AI-RELEASE/
 3. Ask questions about current events or math problems
 4. The AI will use tools to provide accurate answers
 
-### 5. **Agent Mode** (still in beta)
+### 5. **Agent Mode** (WIP)
 1. Click "Initialize Agent"
-2. Select an Ollama model (e.g., LLaVA or Qwen-VL for vision)
+2. Select an Ollama model (e.g., LLaVA or Qwen3-VL for vision)
 3. Type a task: "Open Notepad and write a poem about AI"
 4. Watch as the agent takes control of your mouse and keyboard to complete the task
 5. **Emergency Stop**: Click "Cancel Task" at any time
