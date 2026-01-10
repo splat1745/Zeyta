@@ -853,24 +853,46 @@ else:
 # Check subprocess availability
 chatter_python_env = os.getenv('CHATTERBOX_PYTHON')
 
-# Auto-detect venv_chatterbox if not set
+# Auto-detect venv_chatterbox if not set (support both Windows and Linux paths)
 if not chatter_python_env:
-    possible_venvs = [
-        BASE_DIR / 'venv_chatterbox' / 'Scripts' / 'python.exe',
-    ]
+    # Detect platform and build paths accordingly
+    is_windows = sys.platform == 'win32'
+    
+    if is_windows:
+        # Windows paths
+        possible_venvs = [
+            BASE_DIR / 'venv_chatterbox' / 'Scripts' / 'python.exe',
+        ]
+    else:
+        # Linux/macOS paths
+        possible_venvs = [
+            BASE_DIR / 'venv_chatterbox' / 'bin' / 'python',
+            BASE_DIR / 'venv_chatterbox' / 'bin' / 'python3',
+        ]
+    
     for venv_python in possible_venvs:
         if venv_python.exists():
             print(f"🔍 Found potential Chatterbox venv: {venv_python}")
             # Verify it has chatterbox
             try:
                 # Use try/except in subprocess to avoid debugger breaking on uncaught ModuleNotFoundError
-                subprocess.run([str(venv_python), "-c", "import sys; try: import chatterbox; except ImportError: sys.exit(1)"], check=True, capture_output=True)
-                os.environ['CHATTERBOX_PYTHON'] = str(venv_python)
-                chatter_python_env = str(venv_python)
-                print(f"✓ Auto-configured CHATTERBOX_PYTHON: {chatter_python_env}")
-                break
-            except subprocess.CalledProcessError:
-                print(f"   (Chatterbox not found in {venv_python})")
+                result = subprocess.run(
+                    [str(venv_python), "-c", "import chatterbox; print('OK')"],
+                    capture_output=True,
+                    text=True,
+                    timeout=15
+                )
+                if result.returncode == 0 and 'OK' in result.stdout:
+                    os.environ['CHATTERBOX_PYTHON'] = str(venv_python)
+                    chatter_python_env = str(venv_python)
+                    print(f"✓ Auto-configured CHATTERBOX_PYTHON: {chatter_python_env}")
+                    break
+                else:
+                    print(f"   (Chatterbox not found in {venv_python})")
+            except subprocess.TimeoutExpired:
+                print(f"   (Chatterbox check timed out for {venv_python})")
+            except Exception as e:
+                print(f"   (Error checking {venv_python}: {e})")
 
 if chatter_python_env:
     print(f'✓ CHATTERBOX_PYTHON is set to: {chatter_python_env}')
@@ -1739,6 +1761,31 @@ def api_initialize():
     model_type = data.get('type')
     
     if model_type == 'tts':
+        # Check Python version first
+        if PYTHON_VERSION >= (3, 12):
+            # Try to use venv subprocess if available
+            if chatter_python_env:
+                device = data.get('device', 'auto')
+                backend = data.get('backend', 'chatterbox')
+                print(f"🔄 TTS initialization requested with venv - device={device}, backend={backend}")
+                # Try to force subprocess usage with Python 3.11 venv
+                success, message = models.load_tts(device=device, backend=backend, allow_reinstall=False)
+                if not success and "Python 3.12" in str(message):
+                    # Try to provide a more helpful message
+                    return jsonify({
+                        'success': False, 
+                        'message': CHATTERBOX_COMPATIBILITY_MESSAGE or message,
+                        'suggestion': f'Chatterbox venv found at {chatter_python_env}. Using subprocess mode...',
+                        'venv_python': chatter_python_env
+                    })
+                return jsonify({'success': success, 'message': message})
+            else:
+                return jsonify({
+                    'success': False,
+                    'message': CHATTERBOX_COMPATIBILITY_MESSAGE or 'Python 3.12 detected but venv_chatterbox not found',
+                    'suggestion': 'Please create venv_chatterbox with Python 3.11 or run the app with Python 3.11'
+                })
+        
         device = data.get('device', 'auto')
         backend = data.get('backend')
         allow_reinstall = data.get('allow_reinstall')
@@ -1747,6 +1794,23 @@ def api_initialize():
         return jsonify({'success': success, 'message': message})
     
     elif model_type == 'stt':
+        # Check Python version first
+        if PYTHON_VERSION >= (3, 12) and chatter_python_env:
+            # For STT, also suggest Python 3.11 venv if available
+            size = data.get('size', 'base')
+            device = data.get('device', 'auto')
+            compute_type = data.get('compute_type', 'auto')
+            print(f"🔄 STT initialization requested (Python 3.12) - size: {size}, device: {device}")
+            success, message = models.load_stt(size, device, compute_type)
+            if not success and "numpy" in str(message).lower():
+                return jsonify({
+                    'success': success, 
+                    'message': message,
+                    'suggestion': f'Python 3.11 venv available at {chatter_python_env}',
+                    'venv_python': chatter_python_env
+                })
+            return jsonify({'success': success, 'message': message})
+        
         size = data.get('size', 'base')
         device = data.get('device', 'auto')
         compute_type = data.get('compute_type', 'auto')
@@ -1762,6 +1826,24 @@ def api_initialize():
         return jsonify({'success': success, 'message': message})
     
     return jsonify({'success': False, 'message': 'Invalid model type'})
+
+@app.route('/api/environment', methods=['GET'])
+def api_environment():
+    """Get environment info for debugging"""
+    return jsonify({
+        'python_version': f"{PYTHON_VERSION[0]}.{PYTHON_VERSION[1]}.{PYTHON_VERSION[2]}",
+        'python_executable': sys.executable,
+        'torch_version': str(torch.__version__),
+        'cuda_available': torch.cuda.is_available(),
+        'cuda_device': str(torch.cuda.get_device_name(0)) if torch.cuda.is_available() else None,
+        'chatterbox_python': chatter_python_env,
+        'chatterbox_available': ChatterboxTTS is not None or can_run_chatter_subprocess(),
+        'can_run_subprocess': can_run_chatter_subprocess(),
+        'tts_backend': models.tts_backend,
+        'tts_model_loaded': models.tts_model is not None,
+        'stt_model_loaded': models.stt_model is not None,
+        'llm_loaded': models.brain is not None,
+    })
 
 @app.route('/api/unload', methods=['POST'])
 def api_unload():
@@ -2439,10 +2521,94 @@ def handle_stop_recording():
     emit('recording_stopped', {'message': 'Recording stopped'})
 
 # ============================================================================
+# PORT AND PROCESS MANAGEMENT
+# ============================================================================
+
+def find_process_on_port(port: int) -> tuple[int, str] | None:
+    """Find the process using a specific port.
+    
+    Returns:
+        Tuple of (pid, process_name) if found, None otherwise
+    """
+    try:
+        for conn in psutil.net_connections():
+            if conn.laddr.port == port and conn.state == 'LISTEN':
+                try:
+                    proc = psutil.Process(conn.pid)
+                    return (conn.pid, proc.name())
+                except (psutil.NoSuchProcess, psutil.AccessDenied):
+                    return (conn.pid, "Unknown")
+    except (psutil.NoSuchProcess, psutil.AccessDenied, OSError):
+        pass
+    return None
+
+def find_available_port(start_port: int = 5000, max_attempts: int = 10) -> int:
+    """Find an available port starting from start_port.
+    
+    Args:
+        start_port: Port to start searching from
+        max_attempts: Maximum ports to check
+        
+    Returns:
+        Available port number
+    """
+    for port in range(start_port, start_port + max_attempts):
+        try:
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock.bind(('0.0.0.0', port))
+            sock.close()
+            return port
+        except OSError:
+            continue
+    
+    # If we couldn't find a port in range, return a high random port
+    return 5000 + hash(os.getpid()) % 1000
+
+def handle_port_conflict(port: int) -> int:
+    """Handle port conflicts intelligently.
+    
+    Args:
+        port: The port that's in use
+        
+    Returns:
+        Available port to use instead
+    """
+    print(f"\n⚠️  Port {port} is in use by another program.")
+    
+    # Try to identify the process
+    proc_info = find_process_on_port(port)
+    if proc_info:
+        pid, proc_name = proc_info
+        print(f"   Process: {proc_name} (PID: {pid})")
+        
+        # Try to terminate gracefully if it's a previous Zeyta instance
+        if 'python' in proc_name.lower() or 'zeyta' in proc_name.lower():
+            print(f"   Attempting to terminate the previous process...")
+            try:
+                proc = psutil.Process(pid)
+                proc.terminate()
+                try:
+                    proc.wait(timeout=3)
+                    print(f"   ✓ Process terminated successfully")
+                    return port
+                except psutil.TimeoutExpired:
+                    print(f"   ⚠️  Process didn't terminate within 3 seconds")
+            except (psutil.NoSuchProcess, psutil.AccessDenied) as e:
+                print(f"   ⚠️  Could not terminate process: {e}")
+    
+    # Find an available port
+    print(f"   🔍 Searching for an available port...")
+    available_port = find_available_port(port, max_attempts=20)
+    print(f"   ✓ Using alternative port: {available_port}")
+    return available_port
+
+# ============================================================================
 # MAIN ENTRY POINT
 # ============================================================================
 
 if __name__ == '__main__':
+    import socket
+    
     # Clean invalid distributions
     print("\n🧹 Checking for invalid distributions...")
     clean_invalid_distributions()
@@ -2460,7 +2626,6 @@ if __name__ == '__main__':
         print("✅ Binary compatibility check passed\n")
     
     # Get local IP address for network access info
-    import socket
     try:
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         s.connect(("8.8.8.8", 80))
@@ -2469,13 +2634,24 @@ if __name__ == '__main__':
     except:
         local_ip = "YOUR_PC_IP"
     
+    # Determine which port to use
+    port = 5000
+    try:
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.bind(('0.0.0.0', port))
+        sock.close()
+    except OSError:
+        # Port is in use, handle it
+        port = handle_port_conflict(port)
+        print()
+    
     print("\n" + "=" * 60)
     print("✅ Zeyta AI Web Application Ready!")
     print("=" * 60)
     print(f"\n🌐 Access from this PC:")
-    print(f"   https://localhost:5000")
+    print(f"   https://localhost:{port}")
     print(f"\n📱 Access from other devices on your network:")
-    print(f"   https://{local_ip}:5000")
+    print(f"   https://{local_ip}:{port}")
     print(f"\n⚠️  Note: You will see a 'Not Secure' warning because we use a self-signed certificate.")
     print(f"   Click 'Advanced' -> 'Proceed to ... (unsafe)' to continue.")
     print(f"\n📁 Outputs will be saved to: {OUTPUT_FOLDER}")
@@ -2486,8 +2662,8 @@ if __name__ == '__main__':
     
     # Run server
     try:
-        socketio.run(app, host='0.0.0.0', port=5000, debug=False, allow_unsafe_werkzeug=True, ssl_context='adhoc')
+        socketio.run(app, host='0.0.0.0', port=port, debug=False, allow_unsafe_werkzeug=True, ssl_context='adhoc')
     except Exception as e:
         print(f"⚠️  Failed to start with HTTPS: {e}")
         print("🔓 Falling back to HTTP...")
-        socketio.run(app, host='0.0.0.0', port=5000, debug=False, allow_unsafe_werkzeug=True)
+        socketio.run(app, host='0.0.0.0', port=port, debug=False, allow_unsafe_werkzeug=True)

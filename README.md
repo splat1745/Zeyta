@@ -63,7 +63,8 @@ A fully self-contained, locally-hosted web application providing comprehensive A
 ```powershell
 # Install dependencies first
 pip install -r requirements.txt
-
+```
+```powershell
 # Run the application
 python web_app.py
 ```
@@ -75,7 +76,7 @@ Then open your browser to: **https://localhost:5000**
 ## 📋 Requirements
 
 ### System Requirements
-- **Python**: 3.11 (Voice cloning TTS uses 3.11 strictly)
+- **Python**: 3.11.9 (Voice cloning TTS uses 3.11 strictly)
 - **RAM**: 16GB minimum (32GB recommended for Agent Mode or smarter models)
 - **GPU**: NVIDIA GPU with CUDA support (RTX 3050 or better recommended; RTX 50-series optimized)
 - **Storage**: 20GB+ free space for models

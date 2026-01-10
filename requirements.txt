@@ -23,11 +23,11 @@ torchvision>=0.25.0.dev
 transformers>=4.35.0
 # Triton for torch.compile optimizations (required for reduce-overhead mode)
 triton>=3.0.0
-# Optional: xformers for additional attention optimizations
-xformers>=0.0.23
+# Optional: xformers for additional attention optimizations (skip if build fails)
+# xformers>=0.0.23
 
 # Core dependencies (NumPy 1.x for binary compatibility)
-numpy>=1.24.0,<2.0
+numpy>=1.24.0
 scipy>=1.11.4
 
 # Audio Processing
@@ -54,5 +54,6 @@ psutil>=5.9.0  # For CPU core detection in optimizer
 # Agent Mode Dependencies
 requests>=2.31.0
 pillow>=10.0.0
+opencv-python>=4.8.0
 pyautogui>=0.9.54
 pywin32>=306; sys_platform == 'win32'  # For overlay click-through on Windows
