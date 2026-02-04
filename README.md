@@ -178,7 +178,7 @@ All dependencies are automatically installed on first run:
 
 ## 📜 License
 
-Copyright © 2025 Zeyta AI. All rights reserved.
+Copyright © 2026 Zitacron. All rights reserved.
 
 ---
 
